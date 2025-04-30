@@ -14,6 +14,12 @@
       --dna-bg: #f6fbfb;
       --bubble-radius: 1.2rem;
     }
+
+    /* Common bubble styling */
+    .bubble { max-width: 70%; padding: 0.75rem 1.25rem; font-size: 1rem; line-height: 1.5rem; border-radius: var(--bubble-radius); box-shadow: 0 1px 4px rgba(0,0,0,0.08); white-space: pre-line; }
+    .bubble-user { background: var(--dna-primary); color: #fff; margin-inline-start: auto; }
+    .bubble-bot  { background: #fff; color: #111; margin-inline-end: auto; }
+
     #chat::-webkit-scrollbar { width: 8px; }
     #chat::-webkit-scrollbar-thumb { background: var(--dna-primary); border-radius: 4px; }
     @keyframes float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)} }
@@ -44,38 +50,15 @@
 
     function appendMessage(text, sender) {
       const bubble = document.createElement('div');
-      bubble.className = `relative max-w-[70%] whitespace-pre-line leading-relaxed text-base md:text-lg px-5 py-3 rounded-[var(--bubble-radius)] shadow ${
-        sender === 'user'
-          ? 'bg-[var(--dna-primary)] text-white ml-auto before:absolute before:-left-2 before:bottom-0 before:w-0 before:h-0 before:border-t-[12px] before:border-t-transparent before:border-r-[16px] before:border-r-[var(--dna-primary)] before:border-b-[12px] before:border-b-transparent'
-          : 'bg-white text-gray-900 mr-auto before:absolute before:-right-2 before:bottom-0 before:w-0 before:h-0 before:border-t-[12px] before:border-t-transparent before:border-l-[16px] before:border-l-white before:border-b-[12px] before:border-b-transparent'
-      }`;
+      bubble.classList.add('bubble');
+      if (sender === 'user') {
+        bubble.classList.add('bubble-user');
+      } else {
+        bubble.classList.add('bubble-bot');
+      }
       bubble.textContent = text;
       chat.appendChild(bubble);
       chat.scrollTop = chat.scrollHeight;
-    }
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const text = input.value.trim();
-      if (!text) return;
-
-      appendMessage(text, 'user');
-      input.value = '';
-
-      try {
-        const res = await fetch(webhookUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text })
-        });
-
-        if (!res.ok) throw new Error('Network response was not ok');
-        const data = await res.json();
-        appendMessage(data.reply || JSON.stringify(data), 'bot');
-      } catch (err) {
-        console.error(err);
-        appendMessage('אירעה שגיאה, נסו שוב מאוחר יותר.', 'bot');
-      }
     });
   </script>
 </body>
