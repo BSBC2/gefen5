@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>גפ"ן 5 • DNAidea style</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     body { font-family: 'Heebo', sans-serif; }
     :root {
@@ -15,26 +15,54 @@
       --bubble-radius: 1.2rem;
     }
 
-    /* Common bubble styling */
-    .bubble { max-width: 70%; padding: 0.75rem 1.25rem; font-size: 1rem; line-height: 1.5rem; border-radius: var(--bubble-radius); box-shadow: 0 1px 4px rgba(0,0,0,0.08); white-space: pre-line; }
-    .bubble-user { background: var(--dna-primary); color: #fff; margin-inline-start: auto; }
-    .bubble-bot  { background: #fff; color: #111; margin-inline-end: auto; }
+    /* Chat bubbles */
+    .bubble {
+      max-width: 70%;
+      padding: 0.75rem 1.25rem;
+      font-size: 1rem;
+      line-height: 1.5rem;
+      border-radius: var(--bubble-radius);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+      white-space: pre-line;
+    }
+    .bubble-user {
+      background: var(--dna-primary);
+      color: #fff;
+      margin-left: auto; /* align to start of rtl (right) reliably */
+    }
+    .bubble-bot {
+      background: #fff;
+      color: #111;
+      margin-right: auto; /* align to end side */
+    }
 
+    /* Scrollbar */
     #chat::-webkit-scrollbar { width: 8px; }
-    #chat::-webkit-scrollbar-thumb { background: var(--dna-primary); border-radius: 4px; }
-    @keyframes float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)} }
-    .logo-float{animation:float 4s ease-in-out infinite}
+    #chat::-webkit-scrollbar-thumb {
+      background: var(--dna-primary);
+      border-radius: 4px;
+    }
+
+    /* Logo animation */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    .logo-float { animation: float 4s ease-in-out infinite; }
   </style>
 </head>
 <body class="bg-[var(--dna-bg)] min-h-screen flex items-center justify-center p-6">
   <div class="w-full max-w-2xl h-[80vh] bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-gray-100">
+    <!-- Header -->
     <header class="relative bg-gradient-to-l from-[var(--dna-primary)] to-[var(--dna-primary-dark)] text-white text-2xl font-bold p-6 text-center tracking-wide shadow-md flex items-center justify-center gap-4">
-      <img src="https://www.dnaidea.co.il/wp-content/uploads/2018/09/logo_transparent.png" alt="DNAidea Logo" class="h-10 logo-float select-none" onerror="this.style.display='none'">
+      <img src="https://www.dnaidea.co.il/wp-content/uploads/2018/09/logo_transparent.png" alt="DNAidea Logo" class="h-10 logo-float select-none" onerror="this.style.display='none'" />
       <span>גפ"ן 5</span>
     </header>
 
+    <!-- Chat area -->
     <div id="chat" class="flex-1 px-6 py-5 space-y-4 overflow-y-auto bg-[var(--dna-bg)]"></div>
 
+    <!-- Input area -->
     <form id="chat-form" class="flex items-center gap-3 bg-white p-4 border-t border-gray-200">
       <input id="message-input" type="text" placeholder="הקלידו הודעה…" class="flex-1 p-3 rounded-lg bg-gray-100 focus:bg-white focus:ring-2 focus:ring-[var(--dna-primary)] focus:outline-none" autocomplete="off" />
       <button type="submit" class="shrink-0 py-3 px-6 rounded-lg bg-[var(--dna-primary)] hover:bg-[var(--dna-primary-dark)] transition text-white font-semibold shadow-lg active:scale-95">שליחה</button>
@@ -48,17 +76,52 @@
 
     const webhookUrl = 'https://shacharb8.app.n8n.cloud/webhook/e74f52c7-56bf-40d3-b0cb-2ed14df992b6';
 
+    /**
+     * Append a message bubble to the chat window.
+     * @param {string} text - message text
+     * @param {'user' | 'bot'} sender - who sent the message
+     */
     function appendMessage(text, sender) {
       const bubble = document.createElement('div');
-      bubble.classList.add('bubble');
-      if (sender === 'user') {
-        bubble.classList.add('bubble-user');
-      } else {
-        bubble.classList.add('bubble-bot');
-      }
+      bubble.classList.add('bubble', sender === 'user' ? 'bubble-user' : 'bubble-bot');
       bubble.textContent = text;
       chat.appendChild(bubble);
+      // scroll to newest message
       chat.scrollTop = chat.scrollHeight;
+    }
+
+    // Handle form submission
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = input.value.trim();
+      if (!text) return;
+
+      // show user message immediately
+      console.log('append user', text);
+      appendMessage(text, 'user');
+      input.value = '';
+
+      try {
+        const res = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text })
+        });
+
+        const raw = await res.text();
+        let reply;
+        try {
+          const data = JSON.parse(raw);
+          reply = data.reply ?? raw;
+        } catch (err) {
+          reply = raw;
+        }
+        console.log('append bot', reply);
+        appendMessage(reply, 'bot');
+      } catch (err) {
+        console.error('Fetch error', err);
+        appendMessage('אירעה שגיאה, נסו שוב מאוחר יותר.', 'bot');
+      }
     });
   </script>
 </body>
