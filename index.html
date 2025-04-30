@@ -1,22 +1,36 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ShacharBot</title>
+  <title>גפ"ן 5 • DNAidea style</title>
+  <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google font -->
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Heebo', sans-serif; }
+    :root {
+      --dna-primary: #12a9b2;
+      --dna-primary-dark: #0e8c94;
+      --dna-bg: #f6fbfb;
+    }
+  </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-  <div class="w-full max-w-md bg-white shadow-xl rounded-2xl flex flex-col overflow-hidden">
-    <header class="bg-indigo-600 text-white text-xl font-semibold p-4">ShacharBot</header>
+<body class="bg-[var(--dna-bg)] min-h-screen flex items-center justify-center p-4">
+  <div class="w-full max-w-md bg-white rounded-2xl shadow-xl flex flex-col overflow-hidden border border-gray-200">
+    <!-- Header -->
+    <header class="bg-[var(--dna-primary)] text-white text-xl font-semibold p-4 text-center">
+      גפ"ן 5
+    </header>
 
     <!-- Chat area -->
     <div id="chat" class="flex-1 p-4 space-y-3 overflow-y-auto"></div>
 
     <!-- Input area -->
-    <form id="chat-form" class="flex border-t">
-      <input id="message-input" type="text" placeholder="Type your message..." class="flex-1 p-3 focus:outline-none" autocomplete="off" />
-      <button type="submit" class="bg-indigo-600 text-white px-4">Send</button>
+    <form id="chat-form" class="flex border-t border-gray-200">
+      <input id="message-input" type="text" placeholder="הקלידו הודעה…" class="flex-1 p-3 focus:outline-none" autocomplete="off" />
+      <button type="submit" class="bg-[var(--dna-primary)] hover:bg-[var(--dna-primary-dark)] transition text-white px-4">שליחה</button>
     </form>
   </div>
 
@@ -25,21 +39,20 @@
     const form = document.getElementById('chat-form');
     const input = document.getElementById('message-input');
 
-    // Your n8n webhook URL
-    const webhookUrl = 'https://shacharb8.app.n8n.cloud/webhook/e36e83cf-8546-4a7f-b187-8572e4610282';
+    const webhookUrl = 'https://shacharb8.app.n8n.cloud/webhook/e74f52c7-56bf-40d3-b0cb-2ed14df992b6';
 
-    // Helper to append chat bubbles
     function appendMessage(text, sender) {
       const bubble = document.createElement('div');
-      bubble.className = `p-3 rounded-lg max-w-[75%] whitespace-pre-line ${
-        sender === 'user' ? 'bg-indigo-600 text-white ml-auto' : 'bg-gray-200 text-gray-900 mr-auto'
+      bubble.className = `max-w-[75%] whitespace-pre-line rounded-lg p-3 text-sm leading-relaxed ${
+        sender === 'user'
+          ? 'bg-[var(--dna-primary)] text-white ml-auto'
+          : 'bg-gray-100 text-gray-900 mr-auto'
       }`;
       bubble.textContent = text;
       chat.appendChild(bubble);
-      chat.scrollTop = chat.scrollHeight; // keep latest message in view
+      chat.scrollTop = chat.scrollHeight;
     }
 
-    // Submit handler
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const text = input.value.trim();
@@ -57,11 +70,10 @@
 
         if (!res.ok) throw new Error('Network response was not ok');
         const data = await res.json();
-        // Expecting n8n to return a JSON with a "reply" field (adjust if different)
         appendMessage(data.reply || JSON.stringify(data), 'bot');
       } catch (err) {
         console.error(err);
-        appendMessage('Oops! Something went wrong. Please try again later.', 'bot');
+        appendMessage('אירעה שגיאה, נסו שוב מאוחר יותר.', 'bot');
       }
     });
   </script>
