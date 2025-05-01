@@ -17,8 +17,8 @@
       max-width: 600px;
       margin: 50px auto;
       background-color: #ffffff;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
       overflow: hidden;
     }
     .chat-header {
@@ -40,27 +40,30 @@
       padding: 20px;
       height: 400px;
       overflow-y: auto;
+      background-color: #fafafa;
       border-top: 1px solid #ddd;
       border-bottom: 1px solid #ddd;
     }
     .chat-input {
       display: flex;
       padding: 10px;
+      background-color: #f0f0f0;
     }
     .chat-input input {
       flex: 1;
-      padding: 10px;
+      padding: 12px;
       font-size: 1em;
       border: 1px solid #ccc;
-      border-radius: 4px;
+      border-radius: 8px;
     }
     .chat-input button {
-      padding: 10px 20px;
+      padding: 12px 20px;
       margin-right: 10px;
       background-color: #3949AB;
       color: #ffffff;
       border: none;
-      border-radius: 4px;
+      border-radius: 8px;
+      font-weight: bold;
       cursor: pointer;
     }
     .chat-input button:hover {
@@ -77,9 +80,10 @@
     }
     .message p {
       display: inline-block;
-      padding: 10px;
-      border-radius: 10px;
+      padding: 10px 15px;
+      border-radius: 16px;
       max-width: 80%;
+      line-height: 1.4;
     }
     .message.user p {
       background-color: #E8EAF6;
@@ -92,12 +96,10 @@
 <body>
   <div class="chat-container">
     <div class="chat-header">
-      <img src="https://www.dnaidea.co.il/wp-content/uploads/2021/05/logo.png" alt="לוגו DNAidea" />
+      <img src="https://www.dnaidea.co.il/wp-content/uploads/2021/05/logo.png" alt="DNAidea Logo" onerror="this.style.display='none'">
       <h1>גפ"ן 5</h1>
     </div>
-    <div class="chat-messages" id="chatMessages">
-      <!-- הודעות יוצגו כאן -->
-    </div>
+    <div class="chat-messages" id="chatMessages"></div>
     <div class="chat-input">
       <input type="text" id="userInput" placeholder="הקלד את ההודעה שלך..." />
       <button onclick="sendMessage()">שלח</button>
@@ -108,15 +110,11 @@
     const chatMessages = document.getElementById('chatMessages');
     const userInput = document.getElementById('userInput');
 
-    // יצירת session ID ייחודי
+    // יצירת session ID קבוע לדפדפן
     let sessionId = localStorage.getItem('sessionId');
     if (!sessionId) {
-      sessionId = generateSessionId();
+      sessionId = 'sess-' + Math.random().toString(36).substr(2, 9);
       localStorage.setItem('sessionId', sessionId);
-    }
-
-    function generateSessionId() {
-      return 'sess-' + Math.random().toString(36).substr(2, 9);
     }
 
     function appendMessage(text, sender) {
@@ -132,35 +130,35 @@
     function sendMessage() {
       const message = userInput.value.trim();
       if (message === '') return;
+
       appendMessage(message, 'user');
       userInput.value = '';
 
-      // שליחת ההודעה ל-webhook של n8n
-      fetch('https://shacharb8.app.n8n.cloud/webhook/chatbot', {
+      fetch('hhttps://shacharb8.app.n8n.cloud/webhook/chatbot', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           sessionId: sessionId,
-          message: message
+          prompt: message  // 💡 חשוב! זה מה ש־n8n יקבל
         })
       })
       .then(response => response.json())
       .then(data => {
+        console.log("תשובה מהשרת:", data);
         if (data.reply) {
           appendMessage(data.reply, 'bot');
         } else {
-          appendMessage('שגיאה בקבלת תגובה מהשרת.', 'bot');
+          appendMessage('לא התקבלה תשובה מהשרת.', 'bot');
         }
       })
       .catch(error => {
-        console.error('שגיאה בשליחת ההודעה:', error);
-        appendMessage('שגיאה בשליחת ההודעה.', 'bot');
+        console.error('שגיאה:', error);
+        appendMessage('אירעה שגיאה בשליחת ההודעה.', 'bot');
       });
     }
 
-    // שליחת ההודעה גם בלחיצה על Enter
     userInput.addEventListener('keypress', function (e) {
       if (e.key === 'Enter') {
         sendMessage();
