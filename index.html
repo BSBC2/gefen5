@@ -1,442 +1,860 @@
+אעדכן את הקוד כדי לשנות את הכותרת ל"גפ"ן 5":
+
+```html
 <!DOCTYPE html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DNAidea AI Chat Assistant</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <title>גפ"ן 5 - DNAidea</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-color: #0b4c87;
             --secondary-color: #1273b4;
-            --accent-color: #1d88c5;
-            --light-accent: #e8f4fc;
+            --accent-color: #2196f3;
             --text-color: #333;
-            --light-gray: #e1e1e1;
+            --bg-color: #f5f8fa;
+            --light-gray: #e9eef2;
             --dark-gray: #666;
             --white: #fff;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
             --transition: all 0.3s ease;
+            --border-radius: 12px;
         }
-        
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Open Sans', sans-serif;
-            background-color: #f9f9f9;
-            height: 100vh;
+            font-family: 'Heebo', 'Open Sans', sans-serif;
+            background: linear-gradient(150deg, #f5f8fa 0%, #e9eef2 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+            direction: rtl;
+            text-align: right;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow);
+            border-radius: var(--border-radius);
             overflow: hidden;
+            background-color: var(--white);
+            position: relative;
         }
-        
-        .chat-container {
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            border-radius: 12px;
-            background-color: white;
-            overflow: hidden;
-            transition: var(--transition);
-        }
-        
-        .chat-header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-        }
-        
-        .chat-messages {
-            scrollbar-width: thin;
-            scrollbar-color: var(--light-gray) transparent;
-        }
-        
-        .chat-messages::-webkit-scrollbar {
-            width: 6px;
-        }
-        
-        .chat-messages::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        
-        .chat-messages::-webkit-scrollbar-thumb {
-            background-color: var(--light-gray);
-            border-radius: 6px;
-        }
-        
-        .user-message {
-            background-color: var(--secondary-color);
-            border-bottom-right-radius: 4px;
-            animation: slideInRight 0.3s ease-out;
-        }
-        
-        .bot-message {
-            background-color: #f0f0f0;
-            border-bottom-left-radius: 4px;
-            animation: slideInLeft 0.3s ease-out;
-        }
-        
-        @keyframes slideInRight {
-            from {
-                opacity: 0;
-                transform: translateX(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-        
-        @keyframes slideInLeft {
-            from {
-                opacity: 0;
-                transform: translateX(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-        
-        .typing-indicator {
+
+        .header {
             display: flex;
             align-items: center;
-            animation: fadeIn 0.5s ease;
+            justify-content: space-between;
+            padding: 25px 35px;
+            background-color: var(--white);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            z-index: 10;
         }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        .typing-dot {
-            animation: bounce 1.4s infinite;
-        }
-        
-        .typing-dot:nth-child(1) { animation-delay: 0s; }
-        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-        
-        @keyframes bounce {
-            0%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-6px); }
-        }
-        
-        .send-btn {
-            transition: var(--transition);
-        }
-        
-        .send-btn:hover {
-            background-color: var(--primary-color);
-            transform: scale(1.05);
-        }
-        
-        .input-box {
-            transition: var(--transition);
-        }
-        
-        .input-box:focus {
-            box-shadow: 0 0 0 2px rgba(18, 115, 180, 0.3);
-        }
-        
-        .error-toast {
-            animation: slideDown 0.5s ease, fadeOut 0.5s ease 4.5s forwards;
-            z-index: 1000;
-        }
-        
-        @keyframes slideDown {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        
-        @keyframes fadeOut {
-            from { opacity: 1; }
-            to { opacity: 0; visibility: hidden; }
-        }
-        
+
         .logo-container {
-            animation: floatUp 0.8s ease-out;
+            display: flex;
+            align-items: center;
         }
-        
-        @keyframes floatUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+
+        .header img {
+            max-width: 180px;
+            height: auto;
         }
-        
-        .message-content {
-            word-break: break-word;
+
+        .header-title {
+            margin-right: 20px; /* Changed from margin-left for RTL */
+            color: var(--primary-color);
         }
-        
-        .message-content a {
-            color: var(--accent-color);
-            text-decoration: underline;
+
+        .header-title h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 5px;
         }
-        
-        .message-content code {
-            background-color: #f0f0f0;
-            padding: 2px 4px;
-            border-radius: 4px;
+
+        .header-title p {
+            font-size: 0.9rem;
+            color: var(--dark-gray);
+            font-weight: 400;
+        }
+
+        .session-info {
+            font-size: 0.8rem;
+            color: var(--dark-gray);
+            background-color: rgba(0,0,0,0.03);
+            padding: 6px 12px;
+            border-radius: 50px;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .chat-header {
+            padding: 15px 35px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            font-weight: 600;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chat-header i {
+            margin-left: 10px; /* Changed from margin-right for RTL */
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            font-size: 0.8rem;
+            font-weight: 400;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-left: 8px; /* Changed from margin-right for RTL */
+        }
+
+        .status-connected {
+            background-color: #4caf50;
+        }
+
+        .status-disconnected {
+            background-color: #f44336;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 35px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            background-color: var(--bg-color);
+        }
+
+        .message {
+            max-width: 75%;
+            padding: 15px 20px;
+            border-radius: 18px;
+            font-size: 15px;
+            position: relative;
+            transition: var(--transition);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .bot-message {
+            align-self: flex-start;
+            background-color: var(--white);
+            border-bottom-right-radius: 5px; /* Changed from left for RTL */
+            border-bottom-left-radius: 18px; /* Added for RTL */
+            color: var(--text-color);
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background-color: var(--secondary-color);
+            color: var(--white);
+            border-bottom-left-radius: 5px; /* Changed from right for RTL */
+            border-bottom-right-radius: 18px; /* Added for RTL */
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: rgba(0,0,0,0.4);
+            margin-top: 8px;
+            text-align: left; /* Changed from right for RTL */
+        }
+
+        .user-message .message-time {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .typing-indicator {
+            display: flex;
+            padding: 15px 20px;
+            background-color: var(--white);
+            border-radius: 18px;
+            border-bottom-right-radius: 5px; /* Changed from left for RTL */
+            margin-bottom: 15px;
+            align-self: flex-start;
+            width: 80px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            justify-content: center;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--secondary-color);
+            border-radius: 50%;
+            margin: 0 3px;
+            opacity: 0.6;
+            animation: typing 1.3s infinite;
+        }
+
+        .typing-dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .chat-input-container {
+            padding: 20px 35px;
+            background-color: var(--white);
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .chat-input {
+            display: flex;
+            position: relative;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 16px 25px 16px 60px; /* Switched padding for RTL */
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 30px;
+            outline: none;
+            font-size: 15px;
+            transition: var(--transition);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            font-family: 'Heebo', 'Open Sans', sans-serif;
+            text-align: right; /* Added for RTL */
+        }
+
+        .chat-input input:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 2px rgba(18, 115, 180, 0.2);
+        }
+
+        .send-button {
+            background-color: var(--secondary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            position: absolute;
+            left: 6px; /* Changed from right for RTL */
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .send-button:hover {
+            background-color: var(--primary-color);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            padding: 15px 20px;
+            background-color: #ffebee;
+            color: #c62828;
+            border-radius: 5px;
+            font-size: 14px;
+            margin: 10px 0;
+            text-align: center;
+            animation: shake 0.5s;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            max-width: 80%;
+            align-self: center;
+        }
+
+        .error-message i {
+            margin-left: 10px; /* Changed from margin-right for RTL */
+            font-size: 18px;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        .welcome-message {
+            text-align: center;
+            font-size: 18px;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .debug-panel {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(0,0,0,0.8);
+            color: #4caf50;
             font-family: monospace;
-        }
-        
-        .message-content pre {
-            background-color: #f8f8f8;
             padding: 10px;
-            border-radius: 4px;
+            font-size: 12px;
+            max-height: 150px;
+            overflow-y: auto;
+            display: none;
+            z-index: 100;
+            direction: ltr; /* Keep debug panel in LTR for code readability */
+            text-align: left;
+        }
+
+        .chat-footer {
+            padding: 15px 35px;
+            font-size: 0.75rem;
+            color: var(--dark-gray);
+            text-align: center;
+            background-color: var(--white);
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .debug-toggle {
+            cursor: pointer;
+            margin-right: 5px; /* Changed from margin-left for RTL */
+            color: var(--secondary-color);
+        }
+
+        /* Markdown formatting */
+        .bot-message p {
+            margin-bottom: 10px;
+        }
+
+        .bot-message p:last-child {
+            margin-bottom: 0;
+        }
+
+        .bot-message a {
+            color: var(--secondary-color);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(18, 115, 180, 0.3);
+        }
+
+        .bot-message a:hover {
+            border-bottom-color: var(--secondary-color);
+        }
+
+        .bot-message ul, .bot-message ol {
+            margin: 10px 0;
+            padding-right: 20px; /* Changed from padding-left for RTL */
+            padding-left: 0; /* Added for RTL */
+        }
+
+        .bot-message li {
+            margin-bottom: 5px;
+        }
+
+        .bot-message code {
+            background-color: rgba(0,0,0,0.05);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.9em;
+            direction: ltr; /* Keep code in LTR */
+            display: inline-block;
+        }
+
+        .bot-message pre {
+            background-color: rgba(0,0,0,0.05);
+            padding: 10px;
+            border-radius: 5px;
             overflow-x: auto;
             margin: 10px 0;
-            font-family: monospace;
+            direction: ltr; /* Keep code blocks in LTR */
+            text-align: left;
+        }
+
+        .bot-message pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+
+        .avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-left: 10px; /* Changed from margin-right for RTL */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+        }
+
+        .bot-avatar {
+            background-color: var(--primary-color);
+        }
+
+        .user-avatar {
+            background-color: var(--secondary-color);
+        }
+
+        .message-with-avatar {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .message-content {
+            flex: 1;
+        }
+
+        /* Support for language switching */
+        .language-switch {
+            position: absolute;
+            top: 10px;
+            left: 10px; /* Keep language switch at left side regardless of RTL/LTR */
+            z-index: 1000;
+        }
+
+        .language-btn {
+            background: var(--white);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.75rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .language-btn:hover {
+            background-color: var(--light-gray);
+        }
+
+        /* Add class for LTR content */
+        .ltr-text {
+            direction: ltr;
+            text-align: left;
+        }
+
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 0;
+            }
+            
+            .container {
+                height: 100vh;
+                border-radius: 0;
+            }
+            
+            .header {
+                padding: 15px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .logo-container {
+                margin-bottom: 10px;
+            }
+            
+            .header-title {
+                margin-right: 0; /* Adjusted for RTL */
+            }
+            
+            .header-title h1 {
+                font-size: 1.2rem;
+            }
+            
+            .session-info {
+                display: none;
+            }
+            
+            .chat-header {
+                padding: 12px 15px;
+            }
+            
+            .chat-messages {
+                padding: 20px;
+                gap: 15px;
+            }
+            
+            .message {
+                max-width: 85%;
+                padding: 12px 15px;
+            }
+            
+            .chat-input-container {
+                padding: 15px;
+            }
+            
+            .chat-input input {
+                padding: 12px 15px 12px 50px; /* Adjusted for RTL */
+                font-size: 14px;
+            }
+            
+            .send-button {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .header img {
+                max-width: 140px;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+        }
+
+        /* Animations */
+        .animated-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="%230b4c87" fill-opacity="0.05" d="M0,192L48,176C96,160,192,128,288,128C384,128,480,160,576,186.7C672,213,768,235,864,224C960,213,1056,171,1152,149.3C1248,128,1344,128,1392,128L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') repeat-x;
+            background-size: 1440px 100px;
+            animation: wave 10s linear infinite;
+            opacity: 0.6;
+        }
+
+        .wave:nth-child(2) {
+            bottom: 10px;
+            animation: wave 7s linear reverse infinite;
+            opacity: 0.4;
+        }
+
+        .wave:nth-child(3) {
+            bottom: 20px;
+            animation: wave 15s linear infinite;
+            opacity: 0.2;
+        }
+
+        @keyframes wave {
+            0% { background-position-x: 0; }
+            100% { background-position-x: 1440px; }
+        }
+
+        /* Light throbbing effect for status indicator */
+        .status-connected {
+            animation: throb 2s infinite;
+        }
+
+        @keyframes throb {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
+            50% { box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.2); }
         }
     </style>
 </head>
-<body class="flex flex-col items-center justify-start bg-gray-50">
-    <!-- Error Toast -->
-    <div id="errorToast" class="error-toast fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg hidden">
-        <div class="flex items-center">
-            <i class="fas fa-exclamation-circle mr-2"></i>
-            <span id="errorMessage">An error occurred. Please try again.</span>
-        </div>
+<body>
+    <div class="language-switch">
+        <button class="language-btn" id="language-toggle" title="Switch Language Direction">
+            EN
+        </button>
     </div>
-
-    <div class="container max-w-4xl mx-auto px-4 py-8 h-screen flex flex-col">
-        <!-- Logo -->
-        <div class="logo-container flex justify-center mb-6">
-            <img src="https://www.dnaidea.co.il/wp-content/uploads/2018/09/logo_transparent.png" alt="DNAidea Logo" class="h-16 sm:h-20">
+    
+    <div class="container">
+        <div class="header">
+            <div class="logo-container">
+                <div class="header-title">
+                    <h1>גפ"ן 5</h1>
+                    <p>מערכת שאלות ותשובות חכמה</p>
+                </div>
+                <img src="https://www.dnaidea.co.il/wp-content/uploads/2018/09/logo_transparent.png" alt="DNAidea Logo">
+            </div>
+            <div class="session-info">
+                מזהה שיחה: <span id="session-id">...</span>
+            </div>
         </div>
         
-        <!-- Chat Container -->
-        <div class="chat-container flex-1 flex flex-col overflow-hidden rounded-xl shadow-lg">
-            <!-- Chat Header -->
-            <div class="chat-header py-4 px-6 flex items-center">
-                <i class="fas fa-robot text-white text-xl mr-3"></i>
-                <h2 class="text-white text-lg font-semibold">DNAidea AI Assistant</h2>
+        <div class="chat-container">
+            <div class="chat-header">
+                <div>
+                    כיצד אוכל לעזור לך היום? <i class="fas fa-comments"></i>
+                </div>
+                <div class="connection-status">
+                    <span id="connection-text">מחובר</span>
+                    <div class="status-indicator status-connected" id="connection-status"></div>
+                </div>
             </div>
             
-            <!-- Chat Messages -->
-            <div id="chatMessages" class="chat-messages flex-1 overflow-y-auto p-4 space-y-4 bg-white">
-                <!-- Messages will be added dynamically -->
+            <div class="animated-bg">
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
             </div>
             
-            <!-- Chat Input -->
-            <div class="border-t border-gray-200 p-4 bg-white">
-                <div class="flex items-center">
+            <div class="chat-messages" id="chat-messages">
+                <!-- Messages will be inserted here by JavaScript -->
+            </div>
+            
+            <div class="chat-input-container">
+                <div class="chat-input">
                     <input 
                         type="text" 
-                        id="messageInput" 
-                        class="input-box flex-1 border border-gray-300 rounded-full py-3 px-4 focus:outline-none"
-                        placeholder="Type your message here..."
+                        id="user-input" 
+                        placeholder="הקלד את ההודעה שלך כאן..."
+                        aria-label="שדה קלט הודעה"
+                        dir="rtl"
                     >
-                    <button 
-                        id="sendButton" 
-                        class="send-btn ml-2 bg-secondary-color text-white rounded-full w-12 h-12 flex items-center justify-center bg-blue-500"
-                    >
+                    <button class="send-button" id="send-button" aria-label="שלח הודעה">
                         <i class="fas fa-paper-plane"></i>
                     </button>
                 </div>
+            </div>
+            
+            <div class="chat-footer">
+                <span class="debug-toggle" id="debug-toggle"><i class="fas fa-bug"></i></span>
+                <span>© 2025 DNAidea - כל הזכויות שמורות</span>
+            </div>
+            
+            <div class="debug-panel" id="debug-panel">
+                <!-- Debug info will be inserted here -->
             </div>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', function() {
             // DOM elements
-            const chatMessages = document.getElementById('chatMessages');
-            const messageInput = document.getElementById('messageInput');
-            const sendButton = document.getElementById('sendButton');
-            const errorToast = document.getElementById('errorToast');
-            const errorMessage = document.getElementById('errorMessage');
+            const chatMessages = document.getElementById('chat-messages');
+            const userInput = document.getElementById('user-input');
+            const sendButton = document.getElementById('send-button');
+            const sessionIdSpan = document.getElementById('session-id');
+            const connectionStatus = document.getElementById('connection-status');
+            const connectionText = document.getElementById('connection-text');
+            const debugToggle = document.getElementById('debug-toggle');
+            const debugPanel = document.getElementById('debug-panel');
+            const languageToggle = document.getElementById('language-toggle');
             
-            // Configuration - REPLACE WITH YOUR ACTUAL N8N WEBHOOK URL
-            const N8N_WEBHOOK_URL = 'https://shacharb8.app.n8n.cloud/webhook/chatbot';
+            // Language settings
+            let isRTL = true; // Start with RTL (Hebrew)
+            
+            // Language toggle functionality
+            languageToggle.addEventListener('click', function() {
+                isRTL = !isRTL;
+                if (isRTL) {
+                    document.documentElement.setAttribute('dir', 'rtl');
+                    document.documentElement.setAttribute('lang', 'he');
+                    document.body.style.direction = 'rtl';
+                    document.body.style.textAlign = 'right';
+                    userInput.style.direction = 'rtl';
+                    userInput.style.textAlign = 'right';
+                    userInput.placeholder = "הקלד את ההודעה שלך כאן...";
+                    languageToggle.textContent = "EN";
+                    connectionText.textContent = "מחובר";
+                } else {
+                    document.documentElement.setAttribute('dir', 'ltr');
+                    document.documentElement.setAttribute('lang', 'en');
+                    document.body.style.direction = 'ltr';
+                    document.body.style.textAlign = 'left';
+                    userInput.style.direction = 'ltr';
+                    userInput.style.textAlign = 'left';
+                    userInput.placeholder = "Type your message here...";
+                    languageToggle.textContent = "עב";
+                    connectionText.textContent = "Connected";
+                }
+                
+                // Adjust message bubbles for RTL/LTR
+                adjustMessageBubbles();
+            });
+            
+            // Function to adjust existing message bubbles when changing direction
+            function adjustMessageBubbles() {
+                const allMessages = document.querySelectorAll('.message');
+                allMessages.forEach(msg => {
+                    if (isRTL) {
+                        if (msg.classList.contains('bot-message')) {
+                            msg.style.borderBottomRightRadius = '5px';
+                            msg.style.borderBottomLeftRadius = '18px';
+                        } else if (msg.classList.contains('user-message')) {
+                            msg.style.borderBottomLeftRadius = '5px';
+                            msg.style.borderBottomRightRadius = '18px';
+                        }
+                    } else {
+                        if (msg.classList.contains('bot-message')) {
+                            msg.style.borderBottomLeftRadius = '5px';
+                            msg.style.borderBottomRightRadius = '18px';
+                        } else if (msg.classList.contains('user-message')) {
+                            msg.style.borderBottomRightRadius = '5px';
+                            msg.style.borderBottomLeftRadius = '18px';
+                        }
+                    }
+                });
+            }
+            
+            // Configuration
+            // Replace this with your actual n8n webhook URL
+            const N8N_WEBHOOK_URL = 'https://shacharb8.app.n8n.cloud/webhook/chatbotYOUR_N8N_WEBHOOK_URL'; 
+            
+            // For testing - set to false for production with real n8n
+            const USE_MOCK_RESPONSE = true;
+            
+            // Debug mode
+            let debugMode = false;
             
             // Session management
             let sessionId = localStorage.getItem('dnaidea_session_id');
             if (!sessionId) {
-                sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substring(2, 10);
+                sessionId = generateSessionId();
                 localStorage.setItem('dnaidea_session_id', sessionId);
             }
+            sessionIdSpan.textContent = sessionId;
+            
+            // Connection status checking
+            function updateConnectionStatus(isConnected) {
+                if (isConnected) {
+                    connectionStatus.classList.remove('status-disconnected');
+                    connectionStatus.classList.add('status-connected');
+                    connectionText.textContent = isRTL ? "מחובר" : "Connected";
+                } else {
+                    connectionStatus.classList.remove('status-connected');
+                    connectionStatus.classList.add('status-disconnected');
+                    connectionText.textContent = isRTL ? "מנותק" : "Disconnected";
+                }
+            }
+            
+            // Check connection initially
+            testConnection();
+            
+            // Debug panel toggle
+            debugToggle.addEventListener('click', function() {
+                debugMode = !debugMode;
+                debugPanel.style.display = debugMode ? 'block' : 'none';
+            });
             
             // Add welcome message
-            addBotMessage('Welcome to DNAidea! I\'m here to help with your questions about our consulting services, strategic planning, research, and more. How can I assist you today?');
+            addBotMessage(isRTL ? 
+                "ברוכים הבאים למערכת גפ\"ן 5! אני כאן לעזור לך בשאלות לגבי שירותי הייעוץ שלנו, תכנון אסטרטגי, מחקר ועוד. כיצד אוכל לסייע לך היום?" : 
+                "Welcome to GEFEN 5 system! I'm here to help with your questions about our consulting services, strategic planning, research, and more. How can I assist you today?"
+            );
             
             // Event listeners
             sendButton.addEventListener('click', sendMessage);
-            messageInput.addEventListener('keydown', e => {
+            userInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
                     sendMessage();
                 }
             });
             
+            // Test connection to n8n
+            function testConnection() {
+                if (USE_MOCK_RESPONSE) {
+                    // Mock successful connection
+                    updateConnectionStatus(true);
+                    log('Using mock responses (test mode)');
+                    return;
+                }
+                
+                // Real connection test
+                fetch(N8N_WEBHOOK_URL, {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                })
+                .then(response => {
+                    updateConnectionStatus(response.ok);
+                    log(`Connection test: ${response.ok ? 'Successful' : 'Failed'}`);
+                })
+                .catch(error => {
+                    updateConnectionStatus(false);
+                    log('Connection test error: ' + error.message);
+                });
+            }
+            
+            // Send message function
             function sendMessage() {
-                const message = messageInput.value.trim();
-                if (!message) return;
+                const message = userInput.value.trim();
+                if (message === '') return;
                 
                 // Add user message to chat
                 addUserMessage(message);
+                userInput.value = '';
                 
-                // Clear input field
-                messageInput.value = '';
+                // Disable input during processing
+                userInput.disabled = true;
+                sendButton.disabled = true;
                 
                 // Show typing indicator
                 showTypingIndicator();
                 
-                // Disable send button while processing
-                setSendButtonEnabled(false);
-                
-                // Prepare request data
-                const requestData = {
-                    message: message,
-                    sessionId: sessionId,
-                    timestamp: new Date().toISOString()
-                };
-                
-                // Send message to n8n webhook
-                fetch('https://shacharb8.app.n8n.cloud/webhook/chatbot', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(requestData)
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Network response error: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    // Hide typing indicator
-                    hideTypingIndicator();
+                if (USE_MOCK_RESPONSE) {
+                    // Mock response for testing
+                    log('Sending message: ' + message);
+                    log('Using mock response');
                     
-                    // Add bot response
-                    if (data && data.response) {
-                        addBotMessage(data.response);
-                    } else {
-                        throw new Error('Invalid response format');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    hideTypingIndicator();
-                    
-                    // Show error message to user
-                    showError('Failed to connect to the server. Please try again later.');
-                    
-                    // Add fallback message in chat
-                    addBotMessage('I apologize, but I\'m having trouble connecting to my knowledge system. Please try again in a moment.');
-                })
-                .finally(() => {
-                    // Re-enable send button
-                    setSendButtonEnabled(true);
-                });
-            }
-            
-            // Add a user message to the chat
-            function addUserMessage(text) {
-                const element = createMessageElement(text, 'user-message');
-                chatMessages.appendChild(element);
-                scrollToBottom();
-            }
-            
-            // Add a bot message to the chat
-            function addBotMessage(text) {
-                const element = createMessageElement(text, 'bot-message');
-                chatMessages.appendChild(element);
-                scrollToBottom();
-            }
-            
-            // Create a message element
-            function createMessageElement(text, className) {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `${className} rounded-lg px-4 py-3 max-w-[85%] shadow-sm`;
-                
-                if (className === 'user-message') {
-                    messageDiv.classList.add('self-end', 'ml-auto', 'text-white');
-                } else {
-                    messageDiv.classList.add('self-start', 'mr-auto');
-                }
-                
-                const contentDiv = document.createElement('div');
-                contentDiv.className = 'message-content';
-                
-                // Process Markdown-like formatting
-                const formattedText = text
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                    .replace(/`(.*?)`/g, '<code>$1</code>')
-                    .replace(/\n/g, '<br>');
-                
-                contentDiv.innerHTML = formattedText;
-                messageDiv.appendChild(contentDiv);
-                
-                const timeDiv = document.createElement('div');
-                timeDiv.className = 'text-xs opacity-70 mt-1 text-right';
-                timeDiv.textContent = formatTime(new Date());
-                messageDiv.appendChild(timeDiv);
-                
-                // Create a wrapper to properly align messages
-                const wrapperDiv = document.createElement('div');
-                wrapperDiv.className = 'flex';
-                if (className === 'user-message') {
-                    wrapperDiv.classList.add('justify-end');
-                } else {
-                    wrapperDiv.classList.add('justify-start');
-                }
-                wrapperDiv.appendChild(messageDiv);
-                
-                return wrapperDiv;
-            }
-            
-            // Show typing indicator
-            function showTypingIndicator() {
-                const typingDiv = document.createElement('div');
-                typingDiv.id = 'typingIndicator';
-                typingDiv.className = 'typing-indicator flex self-start bg-gray-100 rounded-lg px-4 py-3 max-w-[85%]';
-                
-                for (let i = 0; i < 3; i++) {
-                    const dot = document.createElement('div');
-                    dot.className = 'typing-dot bg-gray-400 rounded-full w-2 h-2 mx-1';
-                    typingDiv.appendChild(dot);
-                }
-                
-                const wrapperDiv = document.createElement('div');
-                wrapperDiv.className = 'flex justify-start';
-                wrapperDiv.appendChild(typingDiv);
-                
-                chatMessages.appendChild(wrapperDiv);
-                scrollToBottom();
-            }
-            
-            // Hide typing indicator
-            function hideTypingIndicator() {
-                const typingIndicator = document.getElementById('typingIndicator');
-                if (typingIndicator) {
-                    typingIndicator.parentElement.remove();
-                }
-            }
-            
-            // Show error toast
-            function showError(message) {
-                errorMessage.textContent = message;
-                errorToast.classList.remove('hidden');
-                
-                // Hide after 5 seconds
-                setTimeout(() => {
-                    errorToast.classList.add('hidden');
-                }, 5000);
-            }
-            
-            // Enable/disable send button
-            function setSendButtonEnabled(enabled) {
-                sendButton.disabled = !enabled;
-                sendButton.style.opacity = enabled ? '1' : '0.5';
-                sendButton.style.cursor = enabled ? 'pointer' : 'not-allowed';
-            }
-            
-            // Helper functions
-            function scrollToBottom() {
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
-            
-            function formatTime(date) {
-                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            }
-        });
-    </script>
-</body>
-</html>
+                    // Simulate network delay
+                    setTimeout(() => {
+                        hideTypingIndicator();
+                        userInput.disabled = false;
+                        sendButton.disabled = false;
+                        
+                        // Generate a mock response - with RTL support
+                        const hebrewResponses = [
+                            "תודה על הודעתך! במערכת גפ\"ן 5, אנו מתמחים בייעוץ אסטרטגי ונשמח לעזור לך בנושא זה.",
+                            "אני מבין את השאלה שלך לגבי תכנון אסטרטגי. לצוות שלנו במערכת גפ\"ן 5 יש ניסיון רב בתחום זה.",
+                            "זו שאלה מצוינת לגבי מתודולוגיית מחקר. מערכת גפ\"ן 5 פיתחה מספר גישות ייחודיות שעשויות לעניין אותך.",
+                            "עבדנו עם ארגונים רבים באתגרים דומים. המסגרת האסטרטגית שלנו יכולה להתאים למצב שלך.",
+                            "שירותי הייעוץ של מערכת גפ\"ן 5 כוללים תכנון אסטרטגי, מחקר ותמיכה ביישום. האם תרצה מידע ספציפי יותר על אחד מהתחומים האלה?"
+                        ];
+                        
+                        const englishResponses = [
+                            "Thank you for your message! In the GEFEN 5 system, we specialize in strategic consulting and would be happy to help you with that.",
+                            "I understand your question about strategic planning.
