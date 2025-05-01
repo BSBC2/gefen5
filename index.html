@@ -1,128 +1,443 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>גפ"ן 5 • DNAidea style</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700&display=swap" rel="stylesheet" />
-  <style>
-    body { font-family: 'Heebo', sans-serif; }
-    :root {
-      --dna-primary: #12a9b2;
-      --dna-primary-dark: #0e8c94;
-      --dna-bg: #f6fbfb;
-      --bubble-radius: 1.2rem;
-    }
-
-    /* Chat bubbles */
-    .bubble {
-      max-width: 70%;
-      padding: 0.75rem 1.25rem;
-      font-size: 1rem;
-      line-height: 1.5rem;
-      border-radius: var(--bubble-radius);
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-      white-space: pre-line;
-    }
-    .bubble-user {
-      background: var(--dna-primary);
-      color: #fff;
-      margin-left: auto; /* align to start of rtl (right) reliably */
-    }
-    .bubble-bot {
-      background: #fff;
-      color: #111;
-      margin-right: auto; /* align to end side */
-    }
-
-    /* Scrollbar */
-    #chat::-webkit-scrollbar { width: 8px; }
-    #chat::-webkit-scrollbar-thumb {
-      background: var(--dna-primary);
-      border-radius: 4px;
-    }
-
-    /* Logo animation */
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-6px); }
-    }
-    .logo-float { animation: float 4s ease-in-out infinite; }
-  </style>
-</head>
-<body class="bg-[var(--dna-bg)] min-h-screen flex items-center justify-center p-6">
-  <div class="w-full max-w-2xl h-[80vh] bg-white rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-gray-100">
-    <!-- Header -->
-    <header class="relative bg-gradient-to-l from-[var(--dna-primary)] to-[var(--dna-primary-dark)] text-white text-2xl font-bold p-6 text-center tracking-wide shadow-md flex items-center justify-center gap-4">
-      <img src="https://www.dnaidea.co.il/wp-content/uploads/2018/09/logo_transparent.png" alt="DNAidea Logo" class="h-10 logo-float select-none" onerror="this.style.display='none'" />
-      <span>גפ"ן 5</span>
-    </header>
-
-    <!-- Chat area -->
-    <div id="chat" class="flex-1 px-6 py-5 space-y-4 overflow-y-auto bg-[var(--dna-bg)]"></div>
-
-    <!-- Input area -->
-    <form id="chat-form" class="flex items-center gap-3 bg-white p-4 border-t border-gray-200">
-      <input id="message-input" type="text" placeholder="הקלידו הודעה…" class="flex-1 p-3 rounded-lg bg-gray-100 focus:bg-white focus:ring-2 focus:ring-[var(--dna-primary)] focus:outline-none" autocomplete="off" />
-      <button type="submit" class="shrink-0 py-3 px-6 rounded-lg bg-[var(--dna-primary)] hover:bg-[var(--dna-primary-dark)] transition text-white font-semibold shadow-lg active:scale-95">שליחה</button>
-    </form>
-  </div>
-
-  <script>
-    const chat = document.getElementById('chat');
-    const form = document.getElementById('chat-form');
-    const input = document.getElementById('message-input');
-
-    const webhookUrl = 'https://shacharb8.app.n8n.cloud/webhook/gefen-memory';
-
-    /**
-     * Append a message bubble to the chat window.
-     * @param {string} text - message text
-     * @param {'user' | 'bot'} sender - who sent the message
-     */
-    function appendMessage(text, sender) {
-      const bubble = document.createElement('div');
-      bubble.classList.add('bubble', sender === 'user' ? 'bubble-user' : 'bubble-bot');
-      bubble.textContent = text;
-      chat.appendChild(bubble);
-      // scroll to newest message
-      chat.scrollTop = chat.scrollHeight;
-    }
-
-    // Handle form submission
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const text = input.value.trim();
-      if (!text) return;
-
-      // show user message immediately
-      console.log('append user', text);
-      appendMessage(text, 'user');
-      input.value = '';
-
-      try {
-        const res = await fetch(webhookUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text })
-        });
-
-        const raw = await res.text();
-        let reply;
-        try {
-          const data = JSON.parse(raw);
-          reply = data.reply ?? raw;
-        } catch (err) {
-          reply = raw;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNAidea AI Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0b4c87;
+            --secondary-color: #1273b4;
+            --text-color: #333;
+            --bg-color: #f9f9f9;
+            --light-gray: #e1e1e1;
+            --dark-gray: #666;
+            --white: #fff;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
         }
-        console.log('append bot', reply);
-        appendMessage(reply, 'bot');
-      } catch (err) {
-        console.error('Fetch error', err);
-        appendMessage('אירעה שגיאה, נסו שוב מאוחר יותר.', 'bot');
-      }
-    });
-  </script>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 0;
+            margin-bottom: 20px;
+        }
+
+        .header img {
+            max-width: 200px;
+            height: auto;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 15px 20px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            font-weight: 600;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .chat-header i {
+            margin-right: 10px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 15px;
+            border-radius: 18px;
+            font-size: 15px;
+            position: relative;
+            transition: var(--transition);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .bot-message {
+            align-self: flex-start;
+            background-color: var(--light-gray);
+            border-bottom-left-radius: 5px;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background-color: var(--secondary-color);
+            color: var(--white);
+            border-bottom-right-radius: 5px;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: var(--dark-gray);
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .typing-indicator {
+            display: flex;
+            padding: 12px 15px;
+            background-color: var(--light-gray);
+            border-radius: 18px;
+            border-bottom-left-radius: 5px;
+            margin-bottom: 15px;
+            align-self: flex-start;
+            width: 70px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--dark-gray);
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: typing 1.3s infinite;
+        }
+
+        .typing-dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 15px;
+            background-color: var(--white);
+            border-top: 1px solid var(--light-gray);
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid var(--light-gray);
+            border-radius: 25px;
+            outline: none;
+            font-size: 15px;
+            transition: var(--transition);
+        }
+
+        .chat-input input:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 2px rgba(18, 115, 180, 0.2);
+        }
+
+        .send-button {
+            background-color: var(--secondary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            margin-left: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .send-button:hover {
+            background-color: var(--primary-color);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            padding: 10px;
+            background-color: #ffebee;
+            color: #c62828;
+            border-radius: 5px;
+            font-size: 14px;
+            margin: 10px 0;
+            text-align: center;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        .welcome-message {
+            text-align: center;
+            font-size: 18px;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        @media screen and (max-width: 768px) {
+            .container {
+                padding: 10px;
+                height: 100vh;
+            }
+            
+            .header img {
+                max-width: 160px;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://www.dnaidea.co.il/wp-content/uploads/2018/09/logo_transparent.png" alt="DNAidea Logo">
+        </div>
+        
+        <div class="chat-container">
+            <div class="chat-header">
+                <i class="fas fa-robot"></i> DNAidea AI Assistant
+            </div>
+            
+            <div class="chat-messages" id="chat-messages">
+                <!-- Messages will be inserted here by JavaScript -->
+            </div>
+            
+            <div class="chat-input">
+                <input 
+                    type="text" 
+                    id="user-input" 
+                    placeholder="Type your message here..."
+                    aria-label="Message input field"
+                >
+                <button class="send-button" id="send-button" aria-label="Send message">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM elements
+            const chatMessages = document.getElementById('chat-messages');
+            const userInput = document.getElementById('user-input');
+            const sendButton = document.getElementById('send-button');
+            
+            // Configuration
+            const N8N_WEBHOOK_URL = 'https://shacharb8.app.n8n.cloud/webhook/chatbot'; // Replace with your n8n webhook URL
+            
+            // Session management
+            let sessionId = localStorage.getItem('dnaidea_session_id');
+            if (!sessionId) {
+                sessionId = generateSessionId();
+                localStorage.setItem('dnaidea_session_id', sessionId);
+            }
+            
+            // Add welcome message
+            addBotMessage("Welcome to DNAidea! I'm here to help with your questions about our consulting services, strategic planning, research, and more. How can I assist you today?");
+            
+            // Event listeners
+            sendButton.addEventListener('click', sendMessage);
+            userInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            // Send message function
+            function sendMessage() {
+                const message = userInput.value.trim();
+                if (message === '') return;
+                
+                // Add user message to chat
+                addUserMessage(message);
+                userInput.value = '';
+                
+                // Show typing indicator
+                showTypingIndicator();
+                
+                // Send message to n8n 
+                fetch(https://shacharb8.app.n8n.cloud/webhook/chatbot, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message,
+                        sessionId,
+                        timestamp: new Date().toISOString()
+                    })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Hide typing indicator
+                    hideTypingIndicator();
+                    
+                    // Add bot response to chat
+                    if (data && data.response) {
+                        addBotMessage(data.response);
+                    } else {
+                        addBotMessage("I received your message, but I'm not sure how to respond. Could you try rephrasing?");
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    hideTypingIndicator();
+                    showErrorMessage();
+                });
+            }
+            
+            // Add user message to chat
+            function addUserMessage(text) {
+                const messageElement = createMessageElement(text, 'user-message');
+                chatMessages.appendChild(messageElement);
+                scrollToBottom();
+            }
+            
+            // Add bot message to chat
+            function addBotMessage(text) {
+                const messageElement = createMessageElement(text, 'bot-message');
+                chatMessages.appendChild(messageElement);
+                scrollToBottom();
+            }
+            
+            // Create message element
+            function createMessageElement(text, className) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${className}`;
+                
+                // Handle possible markdown formatting
+                const formattedText = text
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/\n/g, '<br>');
+                
+                messageDiv.innerHTML = formattedText;
+                
+                const timeDiv = document.createElement('div');
+                timeDiv.className = 'message-time';
+                timeDiv.textContent = formatTime(new Date());
+                messageDiv.appendChild(timeDiv);
+                
+                return messageDiv;
+            }
+            
+            // Show typing indicator
+            function showTypingIndicator() {
+                const typingDiv = document.createElement('div');
+                typingDiv.className = 'typing-indicator';
+                typingDiv.id = 'typing-indicator';
+                
+                for (let i = 0; i < 3; i++) {
+                    const dot = document.createElement('div');
+                    dot.className = 'typing-dot';
+                    typingDiv.appendChild(dot);
+                }
+                
+                chatMessages.appendChild(typingDiv);
+                scrollToBottom();
+            }
+            
+            // Hide typing indicator
+            function hideTypingIndicator() {
+                const typingIndicator = document.getElementById('typing-indicator');
+                if (typingIndicator) {
+                    typingIndicator.remove();
+                }
+            }
+            
+            // Show error message
+            function showErrorMessage() {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.textContent = 'An error occurred. Please try again.';
+                chatMessages.appendChild(errorDiv);
+                
+                // Remove error message after 5 seconds
+                setTimeout(() => {
+                    errorDiv.remove();
+                }, 5000);
+                
+                scrollToBottom();
+            }
+            
+            // Helper functions
+            function scrollToBottom() {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            function formatTime(date) {
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+            
+            function generateSessionId() {
+                return 'sid-' + Date.now() + '-' + Math.random().toString(36).substring(2, 10);
+            }
+        });
+    </script>
 </body>
 </html>
