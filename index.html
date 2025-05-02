@@ -1,169 +1,152 @@
-<!DOCTYPE html>
-<html lang="he" dir="rtl">
+<!DOCTYPE html><html lang="he" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>גפ"ן 5 - צ'אטבוט</title>
-  <link href="https://fonts.googleapis.com/css2?family=Assistant&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>צ'אט גפן</title>
   <style>
+    :root {
+      --primary-color: #1976d2;
+      --primary-color-hover: #1565c0;
+      --background-color: #f9f9f9;
+      --user-bg: var(--primary-color);
+      --bot-bg: #e0e0e0;
+      --font: 'Segoe UI', Tahoma, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: 'Assistant', sans-serif;
-      background-color: #F5F5F5;
-      margin: 0;
-      padding: 0;
-      direction: rtl;
-    }
-    .chat-container {
-      max-width: 600px;
-      margin: 50px auto;
-      background-color: #ffffff;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-      overflow: hidden;
-    }
-    .chat-header {
-      background-color: #1A237E;
-      color: #ffffff;
-      padding: 20px;
+      font-family: var(--font);
+      background-color: var(--background-color);
       display: flex;
       align-items: center;
-    }
-    .chat-header img {
-      height: 40px;
-      margin-left: 10px;
-    }
-    .chat-header h1 {
-      margin: 0;
-      font-size: 1.5em;
-    }
-    .chat-messages {
-      padding: 20px;
-      height: 400px;
-      overflow-y: auto;
-      background-color: #fafafa;
-      border-top: 1px solid #ddd;
-      border-bottom: 1px solid #ddd;
-    }
-    .chat-input {
-      display: flex;
-      padding: 10px;
-      background-color: #f0f0f0;
-    }
-    .chat-input input {
-      flex: 1;
-      padding: 12px;
-      font-size: 1em;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-    }
-    .chat-input button {
-      padding: 12px 20px;
-      margin-right: 10px;
-      background-color: #3949AB;
-      color: #ffffff;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .chat-input button:hover {
-      background-color: #303F9F;
-    }
-    .message {
-      margin-bottom: 15px;
-    }
-    .message.user {
+      justify-content: center;
+      height: 100vh;
+      direction: rtl;
       text-align: right;
     }
-    .message.bot {
-      text-align: left;
-    }
-    .message p {
-      display: inline-block;
-      padding: 10px 15px;
+    .chat-container {
+      width: 100%;
+      max-width: 600px;
+      height: 90vh;
+      background: #fff;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
       border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .header {
+      padding: 16px;
+      background: linear-gradient(90deg, #0d47a1, #1976d2);
+      color: #fff;
+      font-size: 1.25rem;
+      text-align: center;
+    }
+    .messages {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+    }
+    .message {
       max-width: 80%;
-      line-height: 1.4;
+      margin-bottom: 12px;
+      padding: 12px 16px;
+      border-radius: 16px;
+      position: relative;
+      opacity: 0;
+      animation: fadeIn 0.3s ease-in forwards;
     }
-    .message.user p {
-      background-color: #E8EAF6;
+    .message.user {
+      background-color: var(--user-bg);
+      color: #fff;
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
     }
-    .message.bot p {
-      background-color: #F1F1F1;
+    .message.bot {
+      background-color: var(--bot-bg);
+      color: #000;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+    .input-container {
+      display: flex;
+      padding: 12px;
+      border-top: 1px solid #ddd;
+      background: #fafafa;
+    }
+    .input-container input {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+      font-size: 1rem;
+      outline: none;
+    }
+    .input-container button {
+      margin-left: 8px;
+      padding: 0 16px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 20px;
+      background-color: var(--primary-color);
+      color: #fff;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    .input-container button:hover {
+      background-color: var(--primary-color-hover);
     }
   </style>
 </head>
 <body>
   <div class="chat-container">
-    <div class="chat-header">
-      <img src="https://www.dnaidea.co.il/wp-content/uploads/2021/05/logo.png" alt="DNAidea Logo" onerror="this.style.display='none'">
-      <h1>גפ"ן 5</h1>
-    </div>
-    <div class="chat-messages" id="chatMessages"></div>
-    <div class="chat-input">
-      <input type="text" id="userInput" placeholder="הקלד את ההודעה שלך..." />
-      <button onclick="sendMessage()">שלח</button>
+    <div class="header">צ'אט גפן</div>
+    <div class="messages" id="messages"></div>
+    <div class="input-container">
+      <input type="text" id="messageInput" placeholder="הקלד הודעה..." autocomplete="off" />
+      <button id="sendButton">שלח</button>
     </div>
   </div>
-
   <script>
-    const chatMessages = document.getElementById('chatMessages');
-    const userInput = document.getElementById('userInput');
-
-    // יצירת session ID קבוע לדפדפן
-    let sessionId = localStorage.getItem('sessionId');
-    if (!sessionId) {
-      sessionId = 'sess-' + Math.random().toString(36).substr(2, 9);
-      localStorage.setItem('sessionId', sessionId);
+    // Session ID management
+    let sessionID = localStorage.getItem('sessionID');
+    if (!sessionID) {
+      sessionID = '_' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('sessionID', sessionID);
     }
+    const messagesDiv = document.getElementById('messages');
+    const input = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendButton');function appendMessage(text, sender) {
+  const msg = document.createElement('div');
+  msg.classList.add('message', sender);
+  msg.textContent = text;
+  messagesDiv.appendChild(msg);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+function sendMessage() {
+  const prompt = input.value.trim();
+  if (!prompt) return;
+  appendMessage(prompt, 'user');
+  input.value = '';
+  fetch('https://shacharb8.app.n8n.cloud/webhook/Gefenbot', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionID, prompt })
+  })
+  .then(res => res.json())
+  .then(data => {
+    const reply = data.reply || data.message || JSON.stringify(data);
+    appendMessage(reply, 'bot');
+  })
+  .catch(() => {
+    appendMessage('שגיאה בשליחת ההודעה.', 'bot');
+  });
+}
+sendButton.addEventListener('click', sendMessage);
+input.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
 
-    function appendMessage(text, sender) {
-      const messageDiv = document.createElement('div');
-      messageDiv.classList.add('message', sender);
-      const messageText = document.createElement('p');
-      messageText.textContent = text;
-      messageDiv.appendChild(messageText);
-      chatMessages.appendChild(messageDiv);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    function sendMessage() {
-      const message = userInput.value.trim();
-      if (message === '') return;
-
-      appendMessage(message, 'user');
-      userInput.value = '';
-
-      fetch('https://shacharb8.app.n8n.cloud/webhook/Gefenbot', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          sessionId: sessionId,
-          prompt: message  // 💡 חשוב! זה מה ש־n8n יקבל
-        })
-      })
-      .then(response => response.json())
-      .then(data => {
-        console.log("תשובה מהשרת:", data);
-        if (data.reply) {
-          appendMessage(data.reply, 'bot');
-        } else {
-          appendMessage('לא התקבלה תשובה מהשרת.', 'bot');
-        }
-      })
-      .catch(error => {
-        console.error('שגיאה:', error);
-        appendMessage('אירעה שגיאה בשליחת ההודעה.', 'bot');
-      });
-    }
-
-    userInput.addEventListener('keypress', function (e) {
-      if (e.key === 'Enter') {
-        sendMessage();
-      }
-    });
   </script>
 </body>
 </html>
