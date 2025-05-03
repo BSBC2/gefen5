@@ -101,6 +101,11 @@
   </style>
 </head>
 <body>
+  <!--
+    הפעלת הקובץ מדפדפן באמצעות file:// עלולה לחסום בקשות Fetch.
+    כדי לטפל בזה, יש לארח את הקובץ על שרת HTTP/HTTPS (למשל Python -m http.server).
+    ודא שב-webhook של n8n הוגדרו CORS נכונים (הגדר origins מתאימים).
+  -->
   <div class="chat-container">
     <div class="header">צ'אט גפן</div>
     <div class="messages" id="messages"></div>
@@ -110,42 +115,50 @@
     </div>
   </div>
   <script>
-    // Session ID management
-    let sessionID = localStorage.getItem('sessionID');
-    if (!sessionID) {
-      sessionID = '_' + Math.random().toString(36).substr(2, 9);
-      localStorage.setItem('sessionID', sessionID);
-    }
-    const messagesDiv = document.getElementById('messages');
-    const input = document.getElementById('messageInput');
-    const sendButton = document.getElementById('sendButton');function appendMessage(text, sender) {
-  const msg = document.createElement('div');
-  msg.classList.add('message', sender);
-  msg.textContent = text;
-  messagesDiv.appendChild(msg);
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
-}
-function sendMessage() {
-  const prompt = input.value.trim();
-  if (!prompt) return;
-  appendMessage(prompt, 'user');
-  input.value = '';
-  fetch('https://shacharb8.app.n8n.cloud/webhook/Gefenbot', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ sessionID, prompt })
-  })
-  .then(res => res.json())
-  .then(data => {
-    const reply = data.reply || data.message || JSON.stringify(data);
-    appendMessage(reply, 'bot');
-  })
-  .catch(() => {
-    appendMessage('שגיאה בשליחת ההודעה.', 'bot');
-  });
-}
-sendButton.addEventListener('click', sendMessage);
-input.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
+    document.addEventListener('DOMContentLoaded', () => {
+      // Session ID management
+      let sessionID = localStorage.getItem('sessionID');
+      if (!sessionID) {
+        sessionID = '_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('sessionID', sessionID);
+      }
+      const messagesDiv = document.getElementById('messages');
+      const input = document.getElementById('messageInput');
+      const sendButton = document.getElementById('sendButton');function appendMessage(text, sender) {
+    const msg = document.createElement('div');
+    msg.classList.add('message', sender);
+    msg.textContent = text;
+    messagesDiv.appendChild(msg);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  }
+  function sendMessage() {
+    const prompt = input.value.trim();
+    if (!prompt) return;
+    appendMessage(prompt, 'user');
+    input.value = '';
+
+    fetch('https://shacharb8.app.n8n.cloud/webhook/Gefenbot', {
+      method: 'POST',
+      mode: 'cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionID, prompt })
+    })
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP ${res.status} - ${res.statusText}`);
+      return res.json();
+    })
+    .then(data => {
+      const reply = data.reply || data.message || JSON.stringify(data);
+      appendMessage(reply, 'bot');
+    })
+    .catch(error => {
+      console.error('Fetch error:', error);
+      appendMessage(`שגיאה בשליחת ההודעה: ${error.message}`, 'bot');
+    });
+  }
+  sendButton.addEventListener('click', sendMessage);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
+});
 
   </script>
 </body>
