@@ -103,8 +103,8 @@
 <body>
   <!--
     הפעלת הקובץ מדפדפן באמצעות file:// עלולה לחסום בקשות Fetch.
-    כדי לטפל בזה, יש לארח את הקובץ על שרת HTTP/HTTPS (למשל Python -m http.server).
-    ודא שב-webhook של n8n הוגדרו CORS נכונים (הגדר origins מתאימים).
+    כדי לטפל בזה, יש לארח את הקובץ על שרת HTTP/HTTPS (למשל python -m http.server).
+    ודא שב-webhook של n8n הוגדרו CORS נכונים (Allowed Origins).
   -->
   <div class="chat-container">
     <div class="header">צ'אט גפן</div>
@@ -145,7 +145,13 @@
     })
     .then(res => {
       if (!res.ok) throw new Error(`HTTP ${res.status} - ${res.statusText}`);
-      return res.json();
+      return res.text().then(text => {
+        try {
+          return JSON.parse(text);
+        } catch {
+          return { reply: text || 'אין תוכן בתשובה' };
+        }
+      });
     })
     .then(data => {
       const reply = data.reply || data.message || JSON.stringify(data);
