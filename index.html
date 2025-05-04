@@ -98,15 +98,9 @@
       animation-delay: 0.4s;
     }
     @keyframes blink {
-      0% {
-        opacity: 0.2;
-      }
-      20% {
-        opacity: 1;
-      }
-      100% {
-        opacity: 0.2;
-      }
+      0% { opacity: 0.2; }
+      20% { opacity: 1; }
+      100% { opacity: 0.2; }
     }
   </style>
 </head>
@@ -126,7 +120,7 @@
   <script>
     const chatBox = document.getElementById('chatBox');
     const userInput = document.getElementById('userInput');
-    const sessionId = Math.random().toString(36).substring(7); // simple session ID
+    const sessionId = Math.random().toString(36).substring(7); // מזהה ייחודי פשוט
 
     function appendMessage(text, sender) {
       const msg = document.createElement('div');
@@ -168,7 +162,7 @@
 
         const data = await response.json();
         removeTyping();
-        const reply = data.reply || "אין תגובה מהשרת.";
+        const reply = data.output || "אין תגובה מהשרת.";
         appendMessage(reply, 'bot');
       } catch (error) {
         removeTyping();
