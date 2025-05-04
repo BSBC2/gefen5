@@ -1,171 +1,185 @@
-<!DOCTYPE html><html lang="he" dir="rtl">
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>צ'אט גפן</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>צ'אט גפן - DNAidea</title>
   <style>
-    :root {
-      --primary-color: #1976d2;
-      --primary-color-hover: #1565c0;
-      --background-color: #f9f9f9;
-      --user-bg: var(--primary-color);
-      --bot-bg: #e0e0e0;
-      --font: 'Segoe UI', Tahoma, Arial, sans-serif;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: var(--font);
-      background-color: var(--background-color);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
+      font-family: 'Arial', sans-serif;
+      background: #f9f9f9;
+      margin: 0;
+      padding: 0;
       direction: rtl;
-      text-align: right;
     }
     .chat-container {
-      width: 100%;
       max-width: 600px;
-      height: 90vh;
-      background: #fff;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-      border-radius: 16px;
+      margin: 30px auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       display: flex;
       flex-direction: column;
       overflow: hidden;
     }
-    .header {
-      padding: 16px;
-      background: linear-gradient(90deg, #0d47a1, #1976d2);
-      color: #fff;
-      font-size: 1.25rem;
-      text-align: center;
+    .chat-header {
+      background-color: #003366;
+      color: white;
+      padding: 10px;
+      display: flex;
+      align-items: center;
     }
-    .messages {
-      flex: 1;
-      padding: 16px;
+    .chat-header img {
+      height: 40px;
+      margin-left: 10px;
+    }
+    .chat-box {
+      padding: 20px;
+      height: 400px;
       overflow-y: auto;
     }
     .message {
+      margin: 10px 0;
+      padding: 10px 15px;
+      border-radius: 15px;
       max-width: 80%;
-      margin-bottom: 12px;
-      padding: 12px 16px;
-      border-radius: 16px;
-      position: relative;
-      opacity: 0;
-      animation: fadeIn 0.3s ease-in forwards;
+      word-wrap: break-word;
     }
-    .message.user {
-      background-color: var(--user-bg);
-      color: #fff;
-      align-self: flex-start;
-      border-bottom-left-radius: 4px;
-    }
-    .message.bot {
-      background-color: var(--bot-bg);
-      color: #000;
+    .user {
+      background: #d1e7dd;
       align-self: flex-end;
-      border-bottom-right-radius: 4px;
     }
-    @keyframes fadeIn {
-      to { opacity: 1; }
+    .bot {
+      background: #f8d7da;
+      align-self: flex-start;
     }
     .input-container {
       display: flex;
-      padding: 12px;
       border-top: 1px solid #ddd;
-      background: #fafafa;
     }
-    .input-container input {
+    input {
       flex: 1;
-      padding: 12px;
-      border: 1px solid #ccc;
-      border-radius: 20px;
-      font-size: 1rem;
-      outline: none;
-    }
-    .input-container button {
-      margin-left: 8px;
-      padding: 0 16px;
-      font-size: 1rem;
+      padding: 15px;
       border: none;
-      border-radius: 20px;
-      background-color: var(--primary-color);
-      color: #fff;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
+      outline: none;
+      font-size: 16px;
     }
-    .input-container button:hover {
-      background-color: var(--primary-color-hover);
+    button {
+      padding: 15px;
+      background: #003366;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #002244;
+    }
+    .typing {
+      display: flex;
+      align-items: center;
+      padding: 10px 15px;
+      background: #f8d7da;
+      border-radius: 15px;
+      width: fit-content;
+      margin: 10px 0;
+    }
+    .typing span {
+      width: 8px;
+      height: 8px;
+      background: #555;
+      border-radius: 50%;
+      margin: 0 2px;
+      animation: blink 1.4s infinite both;
+    }
+    .typing span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    .typing span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+    @keyframes blink {
+      0% {
+        opacity: 0.2;
+      }
+      20% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0.2;
+      }
     }
   </style>
 </head>
 <body>
-  <!--
-    הפעלת הקובץ מדפדפן באמצעות file:// עלולה לחסום בקשות Fetch.
-    כדי לטפל בזה, יש לארח את הקובץ על שרת HTTP/HTTPS (למשל python -m http.server).
-    ודא שב-webhook של n8n הוגדרו CORS נכונים (Allowed Origins).
-  -->
   <div class="chat-container">
-    <div class="header">צ'אט גפן</div>
-    <div class="messages" id="messages"></div>
+    <div class="chat-header">
+      <img src="https://www.dnaidea.co.il/wp-content/uploads/2021/07/logo.png" alt="DNAidea Logo">
+      <h2>צ'אט גפן</h2>
+    </div>
+    <div id="chatBox" class="chat-box"></div>
     <div class="input-container">
-      <input type="text" id="messageInput" placeholder="הקלד הודעה..." autocomplete="off" />
-      <button id="sendButton">שלח</button>
+      <input type="text" id="userInput" placeholder="הקלד כאן..." />
+      <button onclick="sendMessage()">שלח</button>
     </div>
   </div>
+
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      // Session ID management
-      let sessionID = localStorage.getItem('sessionID');
-      if (!sessionID) {
-        sessionID = '_' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('sessionID', sessionID);
+    const chatBox = document.getElementById('chatBox');
+    const userInput = document.getElementById('userInput');
+    const sessionId = Math.random().toString(36).substring(7); // simple session ID
+
+    function appendMessage(text, sender) {
+      const msg = document.createElement('div');
+      msg.className = `message ${sender}`;
+      msg.textContent = text;
+      chatBox.appendChild(msg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function showTyping() {
+      const typing = document.createElement('div');
+      typing.className = 'typing';
+      typing.id = 'typing';
+      typing.innerHTML = '<span></span><span></span><span></span>';
+      chatBox.appendChild(typing);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function removeTyping() {
+      const typing = document.getElementById('typing');
+      if (typing) {
+        chatBox.removeChild(typing);
       }
-      const messagesDiv = document.getElementById('messages');
-      const input = document.getElementById('messageInput');
-      const sendButton = document.getElementById('sendButton');function appendMessage(text, sender) {
-    const msg = document.createElement('div');
-    msg.classList.add('message', sender);
-    msg.textContent = text;
-    messagesDiv.appendChild(msg);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  }
-  function sendMessage() {
-    const prompt = input.value.trim();
-    if (!prompt) return;
-    appendMessage(prompt, 'user');
-    input.value = '';
+    }
 
-    fetch('https://shacharb8.app.n8n.cloud/webhook/Gefenbot', {
-      method: 'POST',
-      mode: 'cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionID, prompt })
-    })
-    .then(res => {
-      if (!res.ok) throw new Error(`HTTP ${res.status} - ${res.statusText}`);
-      return res.text().then(text => {
-        try {
-          return JSON.parse(text);
-        } catch {
-          return { reply: text || 'אין תוכן בתשובה' };
-        }
-      });
-    })
-    .then(data => {
-      const reply = data.reply || data.message || JSON.stringify(data);
-      appendMessage(reply, 'bot');
-    })
-    .catch(error => {
-      console.error('Fetch error:', error);
-      appendMessage(`שגיאה בשליחת ההודעה: ${error.message}`, 'bot');
+    async function sendMessage() {
+      const prompt = userInput.value.trim();
+      if (!prompt) return;
+      appendMessage(prompt, 'user');
+      userInput.value = '';
+      showTyping();
+
+      try {
+        const response = await fetch('https://shacharb8.app.n8n.cloud/webhook/Gefenbot1111', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId, prompt })
+        });
+
+        const data = await response.json();
+        removeTyping();
+        const reply = data.reply || "אין תגובה מהשרת.";
+        appendMessage(reply, 'bot');
+      } catch (error) {
+        removeTyping();
+        appendMessage("אירעה שגיאה. נסה שוב מאוחר יותר.", 'bot');
+        console.error(error);
+      }
+    }
+
+    userInput.addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') sendMessage();
     });
-  }
-  sendButton.addEventListener('click', sendMessage);
-  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMessage(); });
-});
-
   </script>
 </body>
 </html>
