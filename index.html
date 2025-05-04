@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>צ'אט גפן - DNAidea</title>
+  <title>צ'אט גפן - עם Thread אמיתי</title>
   <style>
     body {
       font-family: 'Arial', sans-serif;
@@ -120,7 +120,12 @@
   <script>
     const chatBox = document.getElementById('chatBox');
     const userInput = document.getElementById('userInput');
-    const sessionId = Math.random().toString(36).substring(7); // מזהה ייחודי פשוט
+
+    // שמירת sessionId ו-threadId
+    const sessionId = localStorage.getItem("sessionId") || (Math.random().toString(36).substring(7));
+    localStorage.setItem("sessionId", sessionId);
+
+    let threadId = localStorage.getItem("threadId");
 
     function appendMessage(text, sender) {
       const msg = document.createElement('div');
@@ -141,9 +146,7 @@
 
     function removeTyping() {
       const typing = document.getElementById('typing');
-      if (typing) {
-        chatBox.removeChild(typing);
-      }
+      if (typing) chatBox.removeChild(typing);
     }
 
     async function sendMessage() {
@@ -151,29 +154,4 @@
       if (!prompt) return;
       appendMessage(prompt, 'user');
       userInput.value = '';
-      showTyping();
-
-      try {
-        const response = await fetch('https://shacharb8.app.n8n.cloud/webhook/Gefenbot1111', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionId, prompt })
-        });
-
-        const data = await response.json();
-        removeTyping();
-        const reply = data.output || "אין תגובה מהשרת.";
-        appendMessage(reply, 'bot');
-      } catch (error) {
-        removeTyping();
-        appendMessage("אירעה שגיאה. נסה שוב מאוחר יותר.", 'bot');
-        console.error(error);
-      }
-    }
-
-    userInput.addEventListener('keypress', function (e) {
-      if (e.key === 'Enter') sendMessage();
-    });
-  </script>
-</body>
-</html>
+      showTyping
