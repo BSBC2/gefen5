@@ -125,7 +125,7 @@ async function sendMessage(){
   const typing=showTyping();
 
   try{
-    const res = await fetch('https://shacharb8.app.n8n.cloud/webhook/Gefenbot1111',{
+    const res = await fetch('https://shacharb8.app.n8n.cloud/webhook-test/Gefenbot1111',{
       method:'POST', mode:'cors',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({sessionId,prompt:txt})
