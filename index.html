@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>גפ"ן AI</title>
 
+<!-- פונט Assistant -->
 <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;700&display=swap" rel="stylesheet">
 
 <style>
@@ -17,24 +18,44 @@ body{
   font-family:'Assistant',sans-serif;background:var(--bg);
   height:100vh;display:flex;justify-content:center;align-items:center;color:var(--txt);
 }
-.chat{width:100%;max-width:400px;background:var(--cont);border:2px solid var(--border);
-  border-radius:16px;box-shadow:0 4px 12px rgba(0,0,0,.1);display:flex;flex-direction:column;overflow:hidden}
-.chat h1{background:var(--main);color:#fff;padding:16px;text-align:center;font-size:1.2rem}
-.body{flex:1;padding:12px;background:var(--bg);overflow-y:auto;display:flex;flex-direction:column;gap:8px}
-.msg{max-width:80%;padding:12px 16px;border-radius:20px;word-wrap:break-word;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.chat{
+  width:100%;max-width:400px;background:var(--cont);border:2px solid var(--border);
+  border-radius:16px;box-shadow:0 4px 12px rgba(0,0,0,.1);
+  display:flex;flex-direction:column;overflow:hidden
+}
+.chat h1{
+  background:var(--main);color:#fff;padding:16px;text-align:center;font-size:1.2rem
+}
+.body{
+  flex:1;padding:12px;background:var(--bg);
+  overflow-y:auto;display:flex;flex-direction:column;gap:8px
+}
+.msg{
+  max-width:80%;padding:12px 16px;border-radius:20px;
+  word-wrap:break-word;box-shadow:0 2px 6px rgba(0,0,0,.08)
+}
 .user{background:var(--user);align-self:flex-end}
-.bot{background:var(--bot);align-self:flex-start}
-.typing{display:inline-block;width:10px;height:10px;margin-left:4px;border-radius:50%;background:var(--main);animation:blink 1s infinite alternate}
+.bot {background:var(--bot);align-self:flex-start}
+.typing{
+  display:inline-block;width:10px;height:10px;margin-left:4px;
+  border-radius:50%;background:var(--main);animation:blink 1s infinite alternate
+}
 @keyframes blink{from{opacity:1}to{opacity:.3}}
-.input{display:flex;align-items:center;gap:6px;border-top:1px solid var(--inp-border);background:var(--inp);padding:8px 12px}
-textarea{flex:1;border:1px solid var(--inp-border);border-radius:8px;padding:10px;font-size:1rem;resize:none;outline:none;background:var(--inp);font-family:inherit}
+.input{
+  display:flex;align-items:center;gap:6px;
+  border-top:1px solid var(--inp-border);background:var(--inp);padding:8px 12px
+}
+textarea{
+  flex:1;border:1px solid var(--inp-border);border-radius:8px;
+  padding:10px;font-size:1rem;resize:none;outline:none;background:var(--inp);font-family:inherit
+}
 button.send{
   font-family:'Assistant',sans-serif;
   background:var(--main);color:#fff;border:none;padding:0 18px;
   font-size:1rem;cursor:pointer;border-radius:8px;transition:.2s
 }
 button.send:hover{background:#6fae30}
-/* סיכת‑נייר */
+/* אייקון סיכת‑נייר */
 label.clip{
   cursor:pointer;padding:4px;border-radius:6px;transition:.2s;display:flex
 }
@@ -67,59 +88,99 @@ input[type=file]{display:none}
 </div>
 
 <script>
-/*–– Session ––*/
-const sessionId = (()=>{const k='dnaidea_sessionId';let v=localStorage.getItem(k);if(!v){v=crypto.randomUUID();localStorage.setItem(k,v);}return v;})();
+/*–– Session ID ––*/
+const sessionId = (()=>{const k='dnaidea_sessionId';let v=localStorage.getItem(k);
+  if(!v){v=crypto.randomUUID();localStorage.setItem(k,v);}return v;})();
 
-/*–– Elements ––*/
-const chatBody=document.getElementById('chatBody');
-const userInput=document.getElementById('userInput');
-const sendBtn=document.getElementById('sendBtn');
-const fileInput=document.getElementById('fileInput');
+/*–– DOM ––*/
+const chatBody = document.getElementById('chatBody');
+const userInput = document.getElementById('userInput');
+const sendBtn = document.getElementById('sendBtn');
+const fileInput = document.getElementById('fileInput');
 
-/*–– Helpers ––*/
+/*–– UI helpers ––*/
 function append(text,cls){
-  const d=document.createElement('div');d.className=`msg ${cls}`;d.textContent=text;
-  chatBody.appendChild(d);chatBody.scrollTop=chatBody.scrollHeight;
+  const div=document.createElement('div');div.className=`msg ${cls}`;div.textContent=text;
+  chatBody.appendChild(div);chatBody.scrollTop=chatBody.scrollHeight;
 }
-function typing(){const t=document.createElement('div');t.className='msg bot';
-  t.innerHTML='<span class="typing"></span>'.repeat(3);chatBody.appendChild(t);chatBody.scrollTop=chatBody.scrollHeight;return t;}
+function showTyping(){
+  const t=document.createElement('div');t.className='msg bot';
+  t.innerHTML='<span class="typing"></span>'.repeat(3);
+  chatBody.appendChild(t);chatBody.scrollTop=chatBody.scrollHeight;
+  return t;
+}
+
+/*–– Response parser: קורא את ה‑stream פעם אחת ––*/
+async function parseResponse(res){
+  if(!res.ok) throw new Error(res.status+' '+res.statusText);
+  const txt = await res.text();           // קורא את ה‑Body פעם אחת
+  try { return JSON.parse(txt); }         // מנסה JSON
+  catch { return txt; }                   // אם נכשל – מחזיר טקסט
+}
 
 /*–– Send text ––*/
 async function sendMessage(){
-  const txt=userInput.value.trim();if(!txt)return;
-  append(txt,'user');userInput.value='';
-  const t=typing();
+  const txt=userInput.value.trim(); if(!txt) return;
+  append(txt,'user'); userInput.value='';
+  const typing=showTyping();
+
   try{
-    const r=await fetch('https://shacharb8.app.n8n.cloud/webhook/Gefenbot1111',{
-      method:'POST',mode:'cors',headers:{'Content-Type':'application/json'},
+    const res = await fetch('https://shacharb8.app.n8n.cloud/webhook/Gefenbot1111',{
+      method:'POST', mode:'cors',
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({sessionId,prompt:txt})
     });
-    if(!r.ok)throw new Error(r.status+' '+r.statusText);
-    let p;try{p=await r.json();}catch{p=await r.text();}
-    chatBody.removeChild(t);
-    const o=Array.isArray(p)?p[0]:p;
-    append(o.output||o.reply||o.message||JSON.stringify(o),'bot');
-  }catch(e){chatBody.removeChild(t);append('שגיאה: '+e.message,'bot');}
+
+    const payload = await parseResponse(res);
+    chatBody.removeChild(typing);
+
+    const out = Array.isArray(payload)?payload[0]:payload;
+    const botText = out.output||out.reply||out.message||JSON.stringify(out);
+    append(botText,'bot');
+
+  }catch(err){
+    chatBody.removeChild(typing);
+    append('שגיאה: '+err.message,'bot');
+  }
 }
 
 /*–– Send file ––*/
-async function sendFile(f){
-  append('📄 '+f.name,'user');const t=typing();
+async function sendFile(file){
+  append('📄 '+file.name,'user');
+  const typing=showTyping();
+
   try{
-    const fd=new FormData();fd.append('sessionId',sessionId);fd.append('file',f,f.name);
-    const r=await fetch('https://shacharb8.app.n8n.cloud/webhook/Gefenbot1111',{method:'POST',mode:'cors',body:fd});
-    if(!r.ok)throw new Error(r.status+' '+r.statusText);
-    let p;try{p=await r.json();}catch{p=await r.text();}
-    chatBody.removeChild(t);
-    const o=Array.isArray(p)?p[0]:p;
-    append(o.output||o.reply||o.message||JSON.stringify(o),'bot');
-  }catch(e){chatBody.removeChild(t);append('שגיאה בשליחת קובץ: '+e.message,'bot');}
+    const fd=new FormData();
+    fd.append('sessionId',sessionId);
+    fd.append('file',file,file.name);
+
+    const res = await fetch('https://shacharb8.app.n8n.cloud/webhook/Gefenbot1111',{
+      method:'POST', mode:'cors', body:fd
+    });
+
+    const payload = await parseResponse(res);
+    chatBody.removeChild(typing);
+
+    const out = Array.isArray(payload)?payload[0]:payload;
+    const botText = out.output||out.reply||out.message||JSON.stringify(out);
+    append(botText,'bot');
+
+  }catch(err){
+    chatBody.removeChild(typing);
+    append('שגיאה בשליחת קובץ: '+err.message,'bot');
+  }
 }
 
-/*–– Events ––*/
+/*–– Event listeners ––*/
 sendBtn.addEventListener('click',sendMessage);
-userInput.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}});
-fileInput.addEventListener('change',e=>{const f=e.target.files[0];if(f)sendFile(f);fileInput.value='';});
+userInput.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}
+});
+fileInput.addEventListener('change',e=>{
+  const f=e.target.files[0];
+  if(f) sendFile(f);
+  fileInput.value='';            // איפוס כדי לאפשר בחירת אותו קובץ שוב
+});
 </script>
 </body>
 </html>
