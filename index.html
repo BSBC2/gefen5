@@ -6,45 +6,169 @@
   <title>מכרז גפ"ן - הגשה באמצעות AI</title>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
-  :root{--bg:#eef4ee;--cont:rgba(255,255,255,.96);--main:#8bc53f;--border:#7cb342;--user:#d8f4c6;--bot:#fff;--txt:#202020;--inp:#fff;--inp-border:#d1d1d1;}
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Assistant',sans-serif;background:var(--bg);height:100vh;padding:16px;position:relative;color:var(--txt);}
-  .floating-logo {position:absolute;top:16px;right:16px;z-index:1000;}
-  .floating-logo img {height:40px;width:auto;}
-  .chat{width:100%;max-width:520px;height:90vh;max-height:720px;margin:auto;background:var(--cont);border:2px solid var(--border);border-radius:20px;box-shadow:0 6px 16px rgba(0,0,0,.12);display:flex;flex-direction:column;overflow:hidden}
-  .header{background:var(--main);color:#fff;display:flex;align-items:center;justify-content:center;padding:12px 16px}
-  .header span{font-size:1.25rem;white-space:nowrap}
-  .body{flex:1;padding:16px 14px;background:var(--bg);overflow-y:auto;display:flex;flex-direction:column;gap:10px;scrollbar-width:thin}
-  .body::-webkit-scrollbar{width:6px}.body::-webkit-scrollbar-thumb{background:#c4c4c4;border-radius:4px}
-  .msg{max-width:78%;padding:10px 14px;border-radius:18px;font-size:1rem;line-height:1.45;position:relative;word-wrap:break-word;box-shadow:0 4px 10px rgba(0,0,0,.15)}
-  .user{background:var(--user);align-self:flex-end;border-bottom-right-radius:4px}
-  .bot{background:var(--bot);align-self:flex-start;border-bottom-left-radius:4px}
-  .user::after,.bot::after{content:"";position:absolute;top:10px;width:0;height:0;border:6px solid transparent}
-  .user::after{right:-8px;border-left-color:var(--user)}.bot::after{left:-8px;border-right-color:var(--bot)}
-  .typing span{display:inline-block;width:8px;height:8px;margin-left:4px;border-radius:50%;background:var(--main);animation:blink 1.2s infinite}
-  .typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
-  @keyframes blink{0%{opacity:1}50%{opacity:.3}100%{opacity:1}}
-  .input{display:flex;align-items:center;gap:10px;border-top:1px solid var(--inp-border);background:var(--inp);padding:12px 14px}
-  textarea{flex:1;border:1px solid var(--inp-border);border-radius:12px;padding:12px 14px;font-size:1rem;resize:none;outline:none;background:var(--inp);font-family:inherit;min-height:50px;max-height:160px}
-  button.send{font-family:'Assistant',sans-serif;background:var(--main);color:#fff;border:none;padding:12px 26px;font-size:1rem;cursor:pointer;border-radius:12px;transition:.2s;line-height:1}
-  button.send:hover{background:#6fad2f}button.send:disabled{opacity:.55;cursor:default}
-  label.clip{cursor:pointer;padding:8px;border-radius:10px;transition:.2s;display:flex}
-  label.clip:hover{background:rgba(0,0,0,.06)}
-  label.clip svg{width:26px;height:26px;fill:var(--main)}
-  input[type=file]{display:none}
+    :root {
+      --bg: #eef4ee;
+      --cont: rgba(255, 255, 255, .96);
+      --main: #8bc53f;
+      --border: #7cb342;
+      --user: #d8f4c6;
+      --bot: #ffffff;
+      --txt: #202020;
+      --inp: #ffffff;
+      --inp-border: #d1d1d1;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0 }
+
+    body {
+      font-family: 'Assistant', sans-serif;
+      background: var(--bg);
+      height: 100vh;
+      padding: 16px;
+      position: relative;
+      color: var(--txt);
+    }
+
+    /* floating logo */
+    .floating-logo {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      z-index: 1000;
+    }
+    .floating-logo img { height: 40px; width: auto }
+
+    /* chat container */
+    .chat {
+      width: 100%;
+      max-width: 520px;
+      height: 90vh;
+      max-height: 720px;
+      margin: auto;
+      background: var(--cont);
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, .12);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .header {
+      background: var(--main);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 16px;
+    }
+    .header span { font-size: 1.25rem; white-space: nowrap }
+
+    /* body/messages */
+    .body {
+      flex: 1;
+      padding: 16px 14px;
+      background: var(--bg);
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      scrollbar-width: thin;
+    }
+    .body::-webkit-scrollbar { width: 6px }
+    .body::-webkit-scrollbar-thumb { background: #c4c4c4; border-radius: 4px }
+
+    .msg {
+      max-width: 78%;
+      padding: 10px 14px;
+      border-radius: 18px;
+      font-size: 1rem;
+      line-height: 1.45;
+      position: relative;
+      word-wrap: break-word;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, .15);
+    }
+    .user { background: var(--user); align-self: flex-end; border-bottom-right-radius: 4px }
+    .bot  { background: var(--bot);  align-self: flex-start; border-bottom-left-radius: 4px }
+    .user::after, .bot::after {
+      content: ""; position: absolute; top: 10px; width: 0; height: 0; border: 6px solid transparent;
+    }
+    .user::after { right: -8px; border-left-color: var(--user) }
+    .bot::after  { left: -8px;  border-right-color: var(--bot) }
+
+    /* typing dots */
+    .typing span {
+      display: inline-block; width: 8px; height: 8px; margin-left: 4px;
+      border-radius: 50%; background: var(--main);
+      animation: blink 1.2s infinite;
+    }
+    .typing span:nth-child(2){ animation-delay: .2s }
+    .typing span:nth-child(3){ animation-delay: .4s }
+    @keyframes blink { 0%{opacity:1} 50%{opacity:.3} 100%{opacity:1} }
+
+    /* input area */
+    .input {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-top: 1px solid var(--inp-border);
+      background: var(--inp);
+      padding: 12px 14px;
+    }
+    textarea {
+      flex: 1;
+      border: 1px solid var(--inp-border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 1rem;
+      resize: none;
+      outline: none;
+      background: var(--inp);
+      font-family: inherit;
+      min-height: 50px;
+      max-height: 160px;
+    }
+    button.send {
+      font-family: 'Assistant', sans-serif;
+      background: var(--main);
+      color: #fff;
+      border: none;
+      padding: 12px 26px;
+      font-size: 1rem;
+      cursor: pointer;
+      border-radius: 12px;
+      transition: .2s;
+      line-height: 1;
+    }
+    button.send:hover   { background: #6fad2f }
+    button.send:disabled{ opacity: .55; cursor: default }
+
+    label.clip {
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 10px;
+      transition: .2s;
+      display: flex;
+    }
+    label.clip:hover { background: rgba(0,0,0,.06) }
+    label.clip svg { width: 26px; height: 26px; fill: var(--main) }
+    input[type=file]{ display:none }
   </style>
 </head>
 <body>
+
+<!-- floating logo -->
 <div class="floating-logo">
   <img src="/dnaidea-logo.png" alt="DNAidea Logo">
 </div>
+
+<!-- chat box -->
 <div class="chat">
-  <div class="header">
-    <span>מכרז גפ"ן - הגשה באמצעות AI</span>
-  </div>
+  <div class="header"><span>מכרז גפ"ן - הגשה באמצעות AI</span></div>
   <div id="chatBody" class="body"></div>
+
   <div class="input">
-    <input type="file" id="fileInput" accept=".pdf,.doc,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+    <input type="file" id="fileInput" accept=".pdf,.doc,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
     <label for="fileInput" class="clip" title="צרף קובץ">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 6.64 9.11 15.03a2.5 2.5 0 1 1-3.54-3.53l8.38-8.4a4 4 0 0 1 5.66 5.66l-8.65 8.67a5.5 5.5 0 1 1-7.78-7.78l7.07-7.1" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </label>
@@ -52,23 +176,22 @@
     <button id="sendBtn" class="send">שלח</button>
   </div>
 </div>
+
 <script>
+// unique session ID per browser
 const sessionId = (() => {
   const k = 'dnaidea_sessionId';
   let v = localStorage.getItem(k);
-  if (!v) {
-    v = crypto.randomUUID();
-    localStorage.setItem(k, v);
-  }
+  if (!v) { v = crypto.randomUUID(); localStorage.setItem(k, v); }
   return v;
 })();
 
-const chatBody = document.getElementById('chatBody'),
-      userInput = document.getElementById('userInput'),
-      sendBtn = document.getElementById('sendBtn'),
-      fileInput = document.getElementById('fileInput');
+const chatBody = document.getElementById('chatBody');
+const userInput = document.getElementById('userInput');
+const sendBtn   = document.getElementById('sendBtn');
+const fileInput = document.getElementById('fileInput');
 
-function append(text, cls) {
+function append(text, cls){
   const div = document.createElement('div');
   div.className = `msg ${cls}`;
   div.textContent = text;
@@ -76,7 +199,7 @@ function append(text, cls) {
   chatBody.scrollTop = chatBody.scrollHeight;
 }
 
-function showTyping() {
+function showTyping(){
   const t = document.createElement('div');
   t.className = 'msg bot typing';
   t.innerHTML = '<span></span><span></span><span></span>';
@@ -85,56 +208,24 @@ function showTyping() {
   return t;
 }
 
-function parseResponse(res) {
+function parseResponse(res){
   return res.text().then(txt => {
-    try {
-      return JSON.parse(txt);
-    } catch {
-      return txt;
-    }
+    try { return JSON.parse(txt); } catch { return txt; }
   });
 }
 
-async function sendMessage() {
+// send text prompt
+async function sendMessage(){
   const txt = userInput.value.trim();
   if (!txt) return;
+
   append(txt, 'user');
   userInput.value = '';
   const typing = showTyping();
   sendBtn.disabled = true;
-  try {
+
+  try{
     const res = await fetch('https://shacharb8.app.n8n.cloud/webhook/Gefenbot1111', {
-      method: 'POST',
-      mode: 'cors',
-      headers: { 'Content-Type': 'application/json' },
+      method:'POST', mode:'cors',
+      headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify({ sessionId, prompt: txt })
-    });
-    const payload = await parseResponse(res);
-    const out = Array.isArray(payload) ? payload[0] : payload;
-    const botText = out.output || out.reply || out.message || JSON.stringify(out);
-    chatBody.removeChild(typing);
-    append(botText, 'bot');
-  } catch (err) {
-    chatBody.removeChild(typing);
-    append('❌ ' + err.message, 'bot');
-  } finally {
-    sendBtn.disabled = false;
-    userInput.focus();
-  }
-}
-
-sendBtn.addEventListener('click', sendMessage);
-userInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendMessage();
-  }
-});
-
-// הצגת הודעה ראשונית של הבוט בעת הטעינה
-window.addEventListener('DOMContentLoaded', () => {
-  append('שלום, אני מסייע בהגשה לגפ"ן, כיצד אוכל לסייע לך?', 'bot');
-});
-</script>
-</body>
-</html>
