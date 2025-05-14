@@ -24,7 +24,6 @@
       line-height:1.45;
       box-shadow:0 4px 10px rgba(0,0,0,.15);
       position:relative;
-      /* preserve paragraphs and line breaks */
       white-space: pre-wrap;
     }
     .user{background:var(--user);align-self:flex-end;border-bottom-right-radius:4px}
@@ -88,9 +87,38 @@
  function typing(){const d=document.createElement('div');d.className='msg bot typing';d.innerHTML='<span></span><span></span><span></span>';chatBody.appendChild(d);chatBody.scrollTop=chatBody.scrollHeight;return d;}
  async function parse(res){const t=await res.text();try{return JSON.parse(t);}catch{return t;}}
 
- async function sendMessage(){const txt=userInput.value.trim();if(!txt)return;append(txt,'user');userInput.value='';const t=typing();sendBtn.disabled=true;try{const res=await fetch('https://shacharb8.app.n8n.cloud/webhook/Gefenbot1111',{method:'POST',mode:'cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId,prompt:txt})});const p=await parse(res);const out=Array.isArray(p)?p[0]:p;append(out.output||out.reply||out.message||JSON.stringify(out),'bot');}catch(e){append('❌ '+e.message,'bot');}finally{chatBody.removeChild(t);sendBtn.disabled=false;}}
+ async function sendMessage(){
+   const txt=userInput.value.trim();
+   if(!txt)return;
+   append(txt,'user');
+   userInput.value='';
+   const t=typing();
+   sendBtn.disabled=true;
+   try{
+     const res=await fetch('https://shacharb8.app.n8n.cloud/webhook/Gefenbot1111',{method:'POST',mode:'cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId,prompt:txt})});
+     const p=await parse(res);
+     const out=Array.isArray(p)?p[0]:p;
+     const raw = out.output||out.reply||out.message||JSON.stringify(out);
+     const cleaned = typeof raw === 'string' ? raw.replace(/\\n/g,' ').replace(/"/g,'') : raw;
+     append(cleaned,'bot');
+   }catch(e){append('❌ '+e.message,'bot');}
+   finally{chatBody.removeChild(t);sendBtn.disabled=false;}
+ }
 
- async function sendFile(file){append('📄 '+file.name,'user');const t=typing();try{const fd=new FormData();fd.append('sessionId',sessionId);fd.append('file',file,file.name);const res=await fetch('https://shacharb8.app.n8n.cloud/webhook/Gefenbot1111',{method:'POST',mode:'cors',body:fd});const p=await parse(res);const out=Array.isArray(p)?p[0]:p;append(out.output||out.reply||out.message||JSON.stringify(out),'bot');}catch(e){append('❌ '+e.message,'bot');}finally{chatBody.removeChild(t);}}
+ async function sendFile(file){
+   append('📄 '+file.name,'user');
+   const t=typing();
+   try{
+     const fd=new FormData();fd.append('sessionId',sessionId);fd.append('file',file,file.name);
+     const res=await fetch('https://shacharb8.app.n8n.cloud/webhook/Gefenbot1111',{method:'POST',mode:'cors',body:fd});
+     const p=await parse(res);
+     const out=Array.isArray(p)?p[0]:p;
+     const raw = out.output||out.reply||out.message||JSON.stringify(out);
+     const cleaned = typeof raw === 'string' ? raw.replace(/\\n/g,' ').replace(/"/g,'') : raw;
+     append(cleaned,'bot');
+   }catch(e){append('❌ '+e.message,'bot');}
+   finally{chatBody.removeChild(t);}    
+ }
 
  // listeners
  sendBtn.addEventListener('click',sendMessage);
