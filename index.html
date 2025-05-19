@@ -77,59 +77,135 @@
  </div>
 
  <script>
- const chatBody=document.getElementById('chatBody');
- const userInput=document.getElementById('userInput');
- const sendBtn=document.getElementById('sendBtn');
- const fileInput=document.getElementById('fileInput');
- const sessionId=(()=>{const k='dnaidea_sessionId';let v=localStorage.getItem(k);if(!v){v=crypto.randomUUID();localStorage.setItem(k,v);}return v;})();
+ const chatBody = document.getElementById('chatBody');
+ const userInput = document.getElementById('userInput');
+ const sendBtn   = document.getElementById('sendBtn');
+ const fileInput = document.getElementById('fileInput');
 
- function append(txt,cls){const div=document.createElement('div');div.className=`msg ${cls}`;div.textContent=txt;chatBody.appendChild(div);chatBody.scrollTop=chatBody.scrollHeight;}
- function typing(){const d=document.createElement('div');d.className='msg bot typing';d.innerHTML='<span></span><span></span><span></span>';chatBody.appendChild(d);chatBody.scrollTop=chatBody.scrollHeight;return d;}
- async function parse(res){const t=await res.text();try{return JSON.parse(t);}catch{return t;}}
-
- async function sendMessage(){
-   const txt=userInput.value.trim();
-   if(!txt)return;
-   append(txt,'user');
-   userInput.value='';
-   const t=typing();
-   sendBtn.disabled=true;
-   try{
-     const res=await fetch('https://shacharb8.app.n8n.cloud/webhook/Gefenbot1111',{method:'POST',mode:'cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId,prompt:txt})});
-     const p=await parse(res);
-     const out=Array.isArray(p)?p[0]:p;
-     const raw = out.output||out.reply||out.message||JSON.stringify(out);
-     const cleaned = typeof raw === 'string' ? raw.replace(/\\n/g,' ').replace(/"/g,'') : raw;
-     append(cleaned,'bot');
-   }catch(e){append('❌ '+e.message,'bot');}
-   finally{chatBody.removeChild(t);sendBtn.disabled=false;}
+ // 1. On load, check localStorage for a sessionId
+ const STORAGE_KEY = 'dnaidea_sessionId';
+ let sessionId = localStorage.getItem(STORAGE_KEY);
+ let isNewSession = false;
+ if (!sessionId) {
+   // first-ever visit → generate & store
+   sessionId = crypto.randomUUID();
+   localStorage.setItem(STORAGE_KEY, sessionId);
+   isNewSession = true;
  }
 
- async function sendFile(file){
-   append('📄 '+file.name,'user');
-   const t=typing();
-   try{
-     const fd=new FormData();
-     fd.append('sessionId',sessionId);
-     fd.append('prompt','file123');
-     fd.append('file',file,file.name);
-     const res=await fetch('https://shacharb8.app.n8n.cloud/webhook/Gefenbot1111',{method:'POST',mode:'cors',body:fd});
-     const p=await parse(res);
-     const out=Array.isArray(p)?p[0]:p;
-     const raw = out.output||out.reply||out.message||JSON.stringify(out);
-     const cleaned = typeof raw === 'string' ? raw.replace(/\\n/g,' ').replace(/"/g,'') : raw;
-     append(cleaned,'bot');
-   }catch(e){append('❌ '+e.message,'bot');}
-   finally{chatBody.removeChild(t);}    
+ // helper to append messages
+ function append(txt, cls) {
+   const div = document.createElement('div');
+   div.className = `msg ${cls}`;
+   div.textContent = txt;
+   chatBody.appendChild(div);
+   chatBody.scrollTop = chatBody.scrollHeight;
+ }
+
+ function typing() {
+   const d = document.createElement('div');
+   d.className = 'msg bot typing';
+   d.innerHTML = '<span></span><span></span><span></span>';
+   chatBody.appendChild(d);
+   chatBody.scrollTop = chatBody.scrollHeight;
+   return d;
+ }
+
+ async function parse(res) {
+   const t = await res.text();
+   try { return JSON.parse(t); }
+   catch { return t; }
+ }
+
+ // 2. sendMessage: include isNewSession, then reset it
+ async function sendMessage() {
+   const txt = userInput.value.trim();
+   if (!txt) return;
+   append(txt, 'user');
+   userInput.value = '';
+   const t = typing();
+   sendBtn.disabled = true;
+
+   try {
+     const payload = {
+       sessionId,
+       prompt: txt,
+       isNewSession
+     };
+     const res = await fetch('https://shacharb8.app.n8n.cloud/webhook/Gefen123456789', {
+       method: 'POST',
+       mode:   'cors',
+       headers: { 'Content-Type': 'application/json' },
+       body:    JSON.stringify(payload)
+     });
+     // after your first-ever send, flip the flag so subsequent calls send false
+     isNewSession = false;
+
+     const p = await parse(res);
+     const out = Array.isArray(p) ? p[0] : p;
+     const raw = out.output || out.reply || out.message || JSON.stringify(out);
+     const cleaned = typeof raw === 'string'
+       ? raw.replace(/\\n/g,' ').replace(/"/g,'')
+       : raw;
+     append(cleaned, 'bot');
+   } catch(e) {
+     append('❌ ' + e.message, 'bot');
+   } finally {
+     chatBody.removeChild(t);
+     sendBtn.disabled = false;
+   }
+ }
+
+ // 3. sendFile: same thing, just append isNewSession to the FormData
+ async function sendFile(file) {
+   append('📄 ' + file.name, 'user');
+   const t = typing();
+   try {
+     const fd = new FormData();
+     fd.append('sessionId', sessionId);
+     fd.append('prompt', 'file123');
+     fd.append('isNewSession', isNewSession);
+     fd.append('file', file, file.name);
+
+     const res = await fetch('https://shacharb8.app.n8n.cloud/webhook/Gefen123456789', {
+       method: 'POST',
+       mode:   'cors',
+       body:    fd
+     });
+     isNewSession = false;
+
+     const p = await parse(res);
+     const out = Array.isArray(p) ? p[0] : p;
+     const raw = out.output || out.reply || out.message || JSON.stringify(out);
+     const cleaned = typeof raw === 'string'
+       ? raw.replace(/\\n/g,' ').replace(/"/g,'')
+       : raw;
+     append(cleaned, 'bot');
+   } catch(e) {
+     append('❌ ' + e.message, 'bot');
+   } finally {
+     chatBody.removeChild(t);
+   }
  }
 
  // listeners
- sendBtn.addEventListener('click',sendMessage);
- userInput.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}});
- fileInput.addEventListener('change',e=>{const f=e.target.files[0];if(f)sendFile(f);e.target.value='';});
+ sendBtn.addEventListener('click', sendMessage);
+ userInput.addEventListener('keydown', e => {
+   if (e.key === 'Enter' && !e.shiftKey) {
+     e.preventDefault();
+     sendMessage();
+   }
+ });
+ fileInput.addEventListener('change', e => {
+   const f = e.target.files[0];
+   if (f) sendFile(f);
+   e.target.value = '';
+ });
 
  // initial bot greeting
- window.addEventListener('DOMContentLoaded',()=>{append('שלום, אני מסייע בהגשה לגפ"ן, כיצד אוכל לסייע לך?','bot');});
+ window.addEventListener('DOMContentLoaded', () => {
+   append('שלום, אני מסייע בהגשה לגפ"ן, כיצד אוכל לסייע לך?', 'bot');
+ });
  </script>
 </body>
 </html>
